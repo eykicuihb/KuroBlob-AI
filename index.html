@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Dynamic Expression Avatar - 自然语言对话动态表情引擎</title>
+  <meta name="description" content="用 JS 实现的高保真 3D 轨道彩虹环、极简 Blob 变体与自然语言对话自动表情判别应用">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header Navbar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo"></div>
+        <h1 data-i18n="brandTitle">KuroBlob AI 动态表情引擎</h1>
+      </div>
+      <div class="header-actions">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span data-i18n="canvasStatus">Canvas 60 FPS 物理引擎</span>
+        </div>
+        <button id="langToggle" class="btn-icon" title="Switch Language / 切换中英文">
+          <span>🌐</span> <span id="langText">English</span>
+        </button>
+        <button id="themeToggle" class="btn-icon" title="切换暗黑/明亮主题">
+          <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+        </button>
+        <button id="exportCodeBtn" class="btn-icon">
+          <span data-i18n="exportCode">⚡ 导出 JS 嵌入代码</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Mode Tabs -->
+    <nav class="mode-tabs">
+      <button id="tabChat" class="mode-tab active" data-i18n="tabChat">💬 AI 智能对话灵动表情模式</button>
+      <button id="tabStudio" class="mode-tab" data-i18n="tabStudio">🎨 Avatar 萌系自定义设计工坊 (Creator Studio)</button>
+    </nav>
+
+    <!-- Main Grid Layout -->
+    <main class="main-layout">
+      <!-- Left Panel: Avatar Stage -->
+      <section class="stage-panel">
+        <div class="stage-top-bar">
+          <span class="control-label">Avatar Canvas Stage</span>
+          <div id="activeEmotionPill" class="emotion-active-pill">
+            <span id="emotionEmoji">👁️</span>
+            <span id="emotionName">IDLE</span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="avatarCanvas"></canvas>
+        </div>
+
+        <!-- Manual Emotion Tester Bar -->
+        <div class="manual-controls">
+          <div class="controls-header">
+            <span class="control-label">手动测试 60+ 萌系程序生成表情</span>
+            <button id="btnTourToggle" class="btn-tour">✨ 播放 60+ 表情自然形变动画 (Auto Tour)</button>
+          </div>
+          <div class="emotion-buttons">
+            <button class="btn-emotion active" data-emotion="IDLE">👁️ Idle</button>
+            <button class="btn-emotion" data-emotion="THINKING">🌀 Thinking</button>
+            <button class="btn-emotion" data-emotion="WRITING">✍️ Writing</button>
+            <button class="btn-emotion" data-emotion="ANGRY">😡 Angry</button>
+            <button class="btn-emotion" data-emotion="HAPPY">😄 Happy</button>
+            <button class="btn-emotion" data-emotion="BOBA">🥺 Boba</button>
+            <button class="btn-emotion" data-emotion="CAT">🐱 Neko</button>
+            <button class="btn-emotion" data-emotion="RABBIT">🐰 Bunny</button>
+            <button class="btn-emotion" data-emotion="ANGEL">😇 Angel</button>
+            <button class="btn-emotion" data-emotion="DEVIL">👿 Devil</button>
+            <button class="btn-emotion" data-emotion="GHOST">👻 Ghost</button>
+            <button class="btn-emotion" data-emotion="BOUNCY">🍮 Jelly</button>
+            <button class="btn-emotion" data-emotion="LOVE">❤️ Love</button>
+            <button class="btn-emotion" data-emotion="SHY">😳 Shy</button>
+            <button class="btn-emotion" data-emotion="LAUGHING">🤣 Laughing</button>
+            <button class="btn-emotion" data-emotion="WINK">😜 Wink</button>
+            <button class="btn-emotion" data-emotion="COOL">😎 Cool</button>
+            <button class="btn-emotion" data-emotion="STAR">🤩 Star</button>
+            <button class="btn-emotion" data-emotion="PANDA">🐼 Panda</button>
+            <button class="btn-emotion" data-emotion="MUSIC">🎵 Dancing</button>
+            <button class="btn-emotion" data-emotion="FOODIE">😋 Yummy</button>
+            <button class="btn-emotion" data-emotion="FIRE">🔥 Flame</button>
+            <button class="btn-emotion" data-emotion="SNOW">🥶 Freeze</button>
+            <button class="btn-emotion" data-emotion="ALIEN">👽 UFO</button>
+            <button class="btn-emotion" data-emotion="MAGIC">🪄 Magic</button>
+            <button class="btn-emotion" data-emotion="NINJA">🥷 Ninja</button>
+            <button class="btn-emotion" data-emotion="MARSHMALLOW">☁️ Cloud</button>
+            <button class="btn-emotion" data-emotion="SUNNY">☀️ Sunny</button>
+            <button class="btn-emotion" data-emotion="RAIN">🌧️ Rain</button>
+            <button class="btn-emotion" data-emotion="THUNDER">🌩️ Thunder</button>
+            <button class="btn-emotion" data-emotion="SNOWY">❄️ Snowy</button>
+            <button class="btn-emotion" data-emotion="WINDY">🌬️ Windy</button>
+            <button class="btn-emotion" data-emotion="FOGGY">🌫️ Foggy</button>
+            <button class="btn-emotion" data-emotion="RAINBOW">🌈 Rainbow</button>
+            <button class="btn-emotion" data-emotion="HAIL">☄️ Hail</button>
+            <button class="btn-emotion" data-emotion="TORNADO">🌪️ Tornado</button>
+            <button class="btn-emotion" data-emotion="PIXEL">👾 Pixel</button>
+            <button class="btn-emotion" data-emotion="COSMIC">🪐 Galaxy</button>
+            <button class="btn-emotion" data-emotion="ZEN">🧘 Zen</button>
+            <button class="btn-emotion" data-emotion="CELEBRITY">✨ Idol</button>
+            <button class="btn-emotion" data-emotion="SAD">🥺 Sad</button>
+            <button class="btn-emotion" data-emotion="SHOCKED">😱 Shocked</button>
+            <button class="btn-emotion" data-emotion="SMUG">😏 Smug</button>
+            <button class="btn-emotion" data-emotion="FOCUSED">🎯 Focused</button>
+            <button class="btn-emotion" data-emotion="DIZZY">💫 Dizzy</button>
+            <button class="btn-emotion" data-emotion="SURPRISED">😲 Surprised</button>
+            <button class="btn-emotion" data-emotion="CONFUSED">🤔 Confused</button>
+            <button class="btn-emotion" data-emotion="SLEEPING">😴 Sleeping</button>
+            <button class="btn-emotion" data-emotion="EVIL">😈 Evil</button>
+            <button class="btn-emotion" data-emotion="HYPED">🔥 Hyped</button>
+            <button class="btn-emotion" data-emotion="BORED">🙄 Bored</button>
+            <button class="btn-emotion" data-emotion="NERVOUS">😰 Nervous</button>
+            <button class="btn-emotion" data-emotion="PARTY">🎉 Party</button>
+            <button class="btn-emotion" data-emotion="DISGUSTED">🤢 Eww</button>
+            <button class="btn-emotion" data-emotion="ROBOT">🤖 Robot</button>
+            <button class="btn-emotion" data-emotion="YAWN">🥱 Yawn</button>
+            <button class="btn-emotion" data-emotion="PUFF">😤 Pout</button>
+            <button class="btn-emotion" data-emotion="PIRATE">🏴‍☠️ Pirate</button>
+            <button class="btn-emotion" data-emotion="SUPERHERO">🦸 Hero</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel A: Dialogue & Sentiment -->
+      <section id="dialoguePanel" class="dialogue-panel">
+        <div class="dialogue-header">
+          <div class="sentiment-indicator">
+            <span class="control-label">自然语言情感判定 (NLP Classifier)</span>
+            <span id="sentimentLabel" style="font-weight: 600;">IDLE</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">置信度:</span>
+            <div class="confidence-bar-bg">
+              <div id="confidenceFill" class="confidence-bar-fill" style="width: 100%;"></div>
+            </div>
+            <span id="confidenceText" style="font-size: 0.75rem; font-weight: 600;">100%</span>
+          </div>
+        </div>
+
+        <!-- Chat Message History -->
+        <div id="chatHistory" class="chat-history">
+          <div class="chat-bubble ai">
+            你好！我是您的 AI 动态表情助手。在下方输入任何话语，我将通过 NLP 自动分析对话情感并切变对应的动态表情！
+            <div class="bubble-meta">
+              <span>系统对话</span>
+              <span>17:47</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preset Test Prompt Chips -->
+        <div class="preset-prompts">
+          <button class="preset-chip" data-prompt="为什么物体无法超越光速？请推导分析">💡 思考 (Thinking)</button>
+          <button class="preset-chip" data-prompt="请帮我写一篇故事并生成代码">📝 写作 (Writing)</button>
+          <button class="preset-chip" data-prompt="怎么又出错误了？太垃圾了吧！">😡 生气 (Angry)</button>
+          <button class="preset-chip" data-prompt="太棒了！你的回答非常精准，赞！">😄 开心 (Happy)</button>
+          <button class="preset-chip" data-prompt="你真的好可爱啊，太喜欢你啦！心动脸红">😳 害羞 (Shy)</button>
+          <button class="preset-chip" data-prompt="太燃了！我已经极度兴奋燃起来了！">🔥 狂热 (Hyped)</button>
+          <button class="preset-chip" data-prompt="太无聊了，没什么意思翻白眼">🙄 无聊 (Bored)</button>
+          <button class="preset-chip" data-prompt="看我戴墨镜大佬装逼，酷吧">😎 酷 (Cool)</button>
+          <button class="preset-chip" data-prompt="系统模式已启动，切换机器人矩阵">🤖 机器人 (Robot)</button>
+          <button class="preset-chip" data-prompt="太拉胯了，简直吐了太嫌弃">🤢 嫌弃 (Eww)</button>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <form id="chatForm" class="chat-input-area">
+          <input type="text" id="chatInput" class="chat-input" placeholder="输入对话内容，测试表情判别与交互..." autocomplete="off">
+          <button type="submit" class="btn-send">发送</button>
+        </form>
+      </section>
+
+      <!-- Right Panel B: Avatar Creator Studio Panel -->
+      <section id="studioPanel" class="studio-panel hidden">
+        <div class="studio-header">
+          <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+            <span>🎨</span> Avatar 萌系自定义设计工坊
+          </h2>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">自定义属于你的 3D 动态萌宠角色</span>
+        </div>
+
+        <div class="studio-body">
+          <!-- Section 1: Body Shape Deformer -->
+          <div class="studio-group">
+            <h3 class="studio-group-title">1. 主体廓形 (Body Shape)</h3>
+            <div class="chip-grid">
+              <button class="studio-chip active" data-shape="BLOB">💧 水银</button>
+              <button class="studio-chip" data-shape="CLOUD">☁️ 5弧云朵</button>
+              <button class="studio-chip" data-shape="TORNADO">🌪️ 龙卷风</button>
+              <button class="studio-chip" data-shape="UFO">🛸 UFO 飞碟</button>
+              <button class="studio-chip" data-shape="CAT">🐱 猫耳</button>
+              <button class="studio-chip" data-shape="RABBIT">🐰 兔耳</button>
+              <button class="studio-chip" data-shape="PANDA">🐼 熊猫耳</button>
+              <button class="studio-chip" data-shape="ROBOT">🤖 机器人</button>
+              <button class="studio-chip" data-shape="TRIANGLE">📐 思考角</button>
+            </div>
+
+            <div class="slider-control">
+              <label>物理弹性 (Spring Stiffness): <span id="valStiffness">0.12</span></label>
+              <input type="range" id="sliderStiffness" min="0.03" max="0.30" step="0.01" value="0.12">
+            </div>
+          </div>
+
+          <!-- Section 2: Eye Customizer -->
+          <div class="studio-group">
+            <h3 class="studio-group-title">2. 胶囊双眼 & 眼神 (Capsule Eyes)</h3>
+            <div class="chip-grid">
+              <button class="studio-eye-chip active" data-eyestyle="PILL">💊 标准胶囊</button>
+              <button class="studio-eye-chip" data-eyestyle="CRESCENT">^ ^ 开心月牙</button>
+              <button class="studio-eye-chip" data-eyestyle="STERN">\ / 斜角斜眼</button>
+              <button class="studio-eye-chip" data-eyestyle="CIRCLE">O O 惊讶圆眼</button>
+              <button class="studio-eye-chip" data-eyestyle="STAR">🤩 闪耀星星</button>
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-control">
+                <label>眼睛宽度: <span id="valEyeW">16px</span></label>
+                <input type="range" id="sliderEyeW" min="8" max="32" value="16">
+              </div>
+              <div class="slider-control">
+                <label>眼睛高度: <span id="valEyeH">38px</span></label>
+                <input type="range" id="sliderEyeH" min="10" max="50" value="38">
+              </div>
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-control">
+                <label>眼睛间距: <span id="valEyeSpacing">28px</span></label>
+                <input type="range" id="sliderEyeSpacing" min="14" max="55" value="28">
+              </div>
+              <div class="slider-control">
+                <label>对称倾角 (\ /): <span id="valEyeTilt">0°</span></label>
+                <input type="range" id="sliderEyeTilt" min="-30" max="30" value="0">
+              </div>
+            </div>
+
+            <div class="slider-row" style="margin-top: 4px;">
+              <div class="slider-control">
+                <label>🔄 双眼整体倾斜 (/ /): <span id="valEyeRot">0°</span></label>
+                <input type="range" id="sliderEyeRot" min="-45" max="45" value="0">
+              </div>
+              <div class="slider-control">
+                <label>🌐 3D 球面位置 X: <span id="valEyePosX">0px</span></label>
+                <input type="range" id="sliderEyePosX" min="-45" max="45" value="0">
+              </div>
+            </div>
+
+            <div class="slider-row" style="margin-top: 4px;">
+              <div class="slider-control" style="grid-column: span 2;">
+                <label>🌐 3D 球面位置 Y: <span id="valEyePosY">0px</span></label>
+                <input type="range" id="sliderEyePosY" min="-45" max="45" value="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Accessories & Aura -->
+          <div class="studio-group">
+            <h3 class="studio-group-title">3. 多彩外置配饰 (Accessories & Aura)</h3>
+            <div class="select-row">
+              <div class="select-control">
+                <label>头部饰品:</label>
+                <select id="selectHeadAcc" class="studio-select">
+                  <option value="NONE">无 (None)</option>
+                  <option value="HALO">😇 天使光环</option>
+                  <option value="HORNS">👿 恶魔红角</option>
+                  <option value="NINJA_MASK">🥷 忍者面罩与额带</option>
+                  <option value="HERO_MASK">🦸 英雄眼罩与胸章</option>
+                  <option value="EYEPATCH">🏴‍☠️ 海盗独眼罩</option>
+                  <option value="ANTENNA">👽 UFO 顶端天线</option>
+                </select>
+              </div>
+
+              <div class="select-control">
+                <label>环境气场配饰:</label>
+                <select id="selectAuraAcc" class="studio-select">
+                  <option value="NONE">无 (None)</option>
+                  <option value="SUN">☀️ 旋转金太阳</option>
+                  <option value="RAINBOW">🌈 7色绚丽彩虹</option>
+                  <option value="RAIN">💧 晶莹下落雨滴</option>
+                  <option value="THUNDER">⚡ 划破闪电霹雳</option>
+                  <option value="SNOW">❄️ 飘落晶莹雪花</option>
+                  <option value="KATANAS">⚔️ 背负双持武士刀</option>
+                  <option value="CAPE">🦸 飘扬红色斗篷</option>
+                  <option value="BEER">🍺 碰杯泡沫啤酒</option>
+                  <option value="FIRE">🔥 升腾跃动火焰</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="checkbox-row">
+              <label class="studio-toggle"><input type="checkbox" id="chkCheeks"> 🌸 粉嫩腮红</label>
+              <label class="studio-toggle"><input type="checkbox" id="chkRings"> 🪐 3D 轨道彩虹环</label>
+              <label class="studio-toggle"><input type="checkbox" id="chkParticles"> 💫 宇宙星尘流光</label>
+            </div>
+          </div>
+
+          <!-- Section 4: Save & Export -->
+          <div class="studio-group">
+            <h3 class="studio-group-title">4. 保存至我的表情包 & 导出 (Save & Export)</h3>
+            <div class="save-form-row">
+              <input type="text" id="inputCustomEmoji" value="🎨" class="input-emoji" title="表情图标">
+              <input type="text" id="inputCustomName" placeholder="输入自定义表情名称 (如: 傲娇酷黑猫)..." class="input-custom-name">
+              <button id="btnSaveCustomEmotion" class="btn-action primary">💾 保存至表情包</button>
+            </div>
+            <div class="actions-group" style="margin-top: 10px;">
+              <button id="btnStudioExportPNG" class="btn-action secondary">📸 导出高清 PNG</button>
+              <button id="btnStudioCopyJSON" class="btn-action secondary">📋 复制配置 JSON</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Export Code Modal -->
+  <div id="codeModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family: 'Outfit', sans-serif;">⚡ AvatarController.js 嵌入代码</h3>
+        <button id="closeModalBtn" class="btn-icon">✕ 关闭</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+          只需复制以下 JS 类，在您的对话 App 中通过 <code>avatar.setEmotion('THINKING')</code> 即可轻松嵌入视频同款动态表情！
+        </p>
+        <pre><code id="codeSnippet">// 1. 引入并初始化
+import { AvatarRenderer } from './js/avatar-renderer.js';
+
+const canvas = document.getElementById('myAvatarCanvas');
+const avatar = new AvatarRenderer(canvas);
+
+// 2. 根据 NLP 对话判别结果改变表情
+avatar.setEmotion('THINKING');  // 触发 3D 轨道彩虹环旋转 + 圆角三角变体
+avatar.setEmotion('WRITING');   // 触发粒子流与脉冲
+avatar.setEmotion('ANGRY');     // 倾斜眼神 + 压扁震荡
+avatar.setEmotion('HAPPY');     // 弹簧跳跃 + 弯月笑眼
+avatar.setEmotion('IDLE');      // 恢复平缓呼吸与眨眼</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
