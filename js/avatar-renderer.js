@@ -180,6 +180,7 @@ export class AvatarRenderer {
   }
 
   updateStudioConfig(newConfig) {
+    this.studioMode = true;
     this.customConfig = { ...this.customConfig, ...newConfig };
   }
 
@@ -196,8 +197,9 @@ export class AvatarRenderer {
     }
 
     if (this.studioMode) {
-      this.setStudioMode(false);
+      this.customConfig.shape = emotion;
     }
+
     if (this.currentEmotion === emotion && this.targetEmotion === emotion) return;
     this.targetEmotion = emotion;
     this.transitionProgress = 0;
@@ -1860,24 +1862,31 @@ export class AvatarRenderer {
     let rightW = this.eyeWidth;
 
     if (this.studioMode) {
+      leftW = this.customConfig.eyeWidth;
+      rightW = this.customConfig.eyeWidth;
+      leftH = this.customConfig.eyeHeight;
+      rightH = this.customConfig.eyeHeight;
+      const baseTilt = (this.customConfig.eyeTilt * Math.PI) / 180;
+      leftTilt = -baseTilt;
+      rightTilt = baseTilt;
+
       const style = this.customConfig.eyeStyle;
       const combinedRotation = ((this.customConfig.eyeRotation || 0) * Math.PI) / 180;
+      
       if (style === 'CRESCENT') {
-        leftTilt = -0.28 + combinedRotation;
-        rightTilt = 0.28 + combinedRotation;
+        this.drawCrescentEye(leftEyeX, eyeY, leftW, leftH, combinedRotation);
+        this.drawCrescentEye(rightEyeX, eyeY, rightW, rightH, combinedRotation);
+        return;
       } else if (style === 'STERN') {
-        leftTilt = 0.38 + combinedRotation;
-        rightTilt = -0.38 + combinedRotation;
+        leftTilt = 0.45 + combinedRotation;
+        rightTilt = -0.45 + combinedRotation;
       } else if (style === 'CIRCLE') {
-        leftW = Math.max(leftW, leftH);
-        rightW = Math.max(rightW, rightH);
-        leftH = leftW;
-        rightH = rightW;
-        leftTilt += combinedRotation;
-        rightTilt += combinedRotation;
+        this.drawCircleEye(leftEyeX, eyeY, Math.max(leftW, leftH));
+        this.drawCircleEye(rightEyeX, eyeY, Math.max(rightW, rightH));
+        return;
       } else if (style === 'STAR') {
-        this.drawStarEye(leftEyeX, eyeY, leftW);
-        this.drawStarEye(rightEyeX, eyeY, rightW);
+        this.drawStarEye(leftEyeX, eyeY, Math.max(leftW, 14));
+        this.drawStarEye(rightEyeX, eyeY, Math.max(rightW, 14));
         return;
       } else {
         leftTilt += combinedRotation;
