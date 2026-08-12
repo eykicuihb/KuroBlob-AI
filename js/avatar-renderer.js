@@ -1867,30 +1867,28 @@ export class AvatarRenderer {
       leftH = this.customConfig.eyeHeight;
       rightH = this.customConfig.eyeHeight;
       const baseTilt = (this.customConfig.eyeTilt * Math.PI) / 180;
-      leftTilt = -baseTilt;
-      rightTilt = baseTilt;
-
-      const style = this.customConfig.eyeStyle;
       const combinedRotation = ((this.customConfig.eyeRotation || 0) * Math.PI) / 180;
       
+      leftTilt = -baseTilt + combinedRotation;
+      rightTilt = baseTilt + combinedRotation;
+
+      const style = this.customConfig.eyeStyle;
+      
       if (style === 'CRESCENT') {
-        this.drawCrescentEye(leftEyeX, eyeY, leftW, leftH, combinedRotation);
-        this.drawCrescentEye(rightEyeX, eyeY, rightW, rightH, combinedRotation);
+        this.drawCrescentEye(leftEyeX, eyeY, leftW, leftH, leftTilt - 0.28);
+        this.drawCrescentEye(rightEyeX, eyeY, rightW, rightH, rightTilt + 0.28);
         return;
       } else if (style === 'STERN') {
-        leftTilt = 0.45 + combinedRotation;
-        rightTilt = -0.45 + combinedRotation;
+        leftTilt += 0.45;
+        rightTilt -= 0.45;
       } else if (style === 'CIRCLE') {
-        this.drawCircleEye(leftEyeX, eyeY, Math.max(leftW, leftH));
-        this.drawCircleEye(rightEyeX, eyeY, Math.max(rightW, rightH));
+        this.drawCircleEye(leftEyeX, eyeY, Math.max(leftW, leftH), leftTilt);
+        this.drawCircleEye(rightEyeX, eyeY, Math.max(rightW, rightH), rightTilt);
         return;
       } else if (style === 'STAR') {
-        this.drawStarEye(leftEyeX, eyeY, Math.max(leftW, 14));
-        this.drawStarEye(rightEyeX, eyeY, Math.max(rightW, 14));
+        this.drawStarEye(leftEyeX, eyeY, Math.max(leftW, 16));
+        this.drawStarEye(rightEyeX, eyeY, Math.max(rightW, 16));
         return;
-      } else {
-        leftTilt += combinedRotation;
-        rightTilt += combinedRotation;
       }
     } else {
       if (this.targetEmotion === 'HAPPY' || this.targetEmotion === 'PARTY') {
@@ -1930,18 +1928,51 @@ export class AvatarRenderer {
     this.drawPillEye(rightEyeX, eyeY, rightW, rightH, rightTilt);
   }
 
+  drawCrescentEye(x, y, w, h, tilt) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.rotate(tilt);
+    this.ctx.strokeStyle = this.eyeColor;
+    this.ctx.lineWidth = Math.max(5, w * 0.35);
+    this.ctx.lineCap = 'round';
+    this.ctx.beginPath();
+    const r = Math.max(10, w * 0.7);
+    this.ctx.arc(0, r * 0.3, r, Math.PI * 1.15, Math.PI * 1.85);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  drawCircleEye(x, y, radius, tilt) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.rotate(tilt);
+    this.ctx.fillStyle = this.eyeColor;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, Math.max(6, radius / 2), 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
   drawStarEye(x, y, size) {
     this.ctx.save();
     this.ctx.translate(x, y);
     this.ctx.rotate(this.time * 2);
     this.ctx.fillStyle = '#FACC15';
+    this.ctx.strokeStyle = '#FFFFFF';
+    this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     for (let i = 0; i < 5; i++) {
-      this.ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * size, -Math.sin((18 + i * 72) * Math.PI / 180) * size);
-      this.ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (size * 0.5), -Math.sin((54 + i * 72) * Math.PI / 180) * (size * 0.5));
+      const outerX = Math.cos((18 + i * 72) * Math.PI / 180) * size;
+      const outerY = -Math.sin((18 + i * 72) * Math.PI / 180) * size;
+      const innerX = Math.cos((54 + i * 72) * Math.PI / 180) * (size * 0.45);
+      const innerY = -Math.sin((54 + i * 72) * Math.PI / 180) * (size * 0.45);
+      if (i === 0) this.ctx.moveTo(outerX, outerY);
+      else this.ctx.lineTo(outerX, outerY);
+      this.ctx.lineTo(innerX, innerY);
     }
     this.ctx.closePath();
     this.ctx.fill();
+    this.ctx.stroke();
     this.ctx.restore();
   }
 
