@@ -2,7 +2,13 @@
 
 > **A high-performance 60 FPS HTML5 Canvas procedural liquid mercury avatar engine powered by 24-point Bezier spring physics, NLP sentiment classification, and a full-featured Avatar Creator Studio.**
 
-[English](#english) | [简体中文](#简体中文)
+<p align="center">
+  <img src="KuroBlob_AI_Promo.gif" alt="KuroBlob AI Demo Showcase" width="750" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);" />
+</p>
+
+<p align="center">
+  <a href="#english">English</a> | <a href="#简体中文">简体中文</a>
+</p>
 
 ---
 
@@ -31,8 +37,8 @@ No framework compilation required! Built with standard Vanilla JS & HTML5 Canvas
 ### Running Locally
 ```bash
 # Clone repository
-git clone https://github.com/your-username/kuroblob-ai.git
-cd kuroblob-ai
+git clone https://github.com/eykicuihb/KuroBlob-AI.git
+cd KuroBlob-AI
 
 # Start local HTTP server
 python3 -m http.server 3000

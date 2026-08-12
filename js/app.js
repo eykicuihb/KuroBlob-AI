@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const startTour = () => {
     isTouring = true;
     btnTourToggle.classList.add('playing');
-    btnTourToggle.textContent = '⏹️ 停止巡演动画 (Pause Tour)';
+    btnTourToggle.textContent = i18n.t('btnTourStop');
     
     tourInterval = setInterval(() => {
       tourIndex = (tourIndex + 1) % tourSequence.length;
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const stopTour = () => {
     isTouring = false;
     btnTourToggle.classList.remove('playing');
-    btnTourToggle.textContent = '✨ 播放 60+ 表情自然形变动画 (Auto Tour)';
+    btnTourToggle.textContent = i18n.t('btnTourStart');
     if (tourInterval) {
       clearInterval(tourInterval);
       tourInterval = null;
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
   savedEmotions.forEach(item => renderCustomEmotionBtn(item));
 
   btnSaveCustomEmotion.addEventListener('click', () => {
-    const name = inputCustomName.value.trim() || '自定义黑萌系';
+    const name = inputCustomName.value.trim() || (i18n.lang === 'zh-CN' ? '自定义黑萌系' : 'Custom KuroBlob');
     const emoji = inputCustomEmoji.value.trim() || '🎨';
     const id = `CUSTOM_${Date.now()}`;
     const customConfigCopy = { ...avatar.customConfig };
@@ -431,9 +431,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderCustomEmotionBtn(newItem);
 
-    btnSaveCustomEmotion.textContent = '✅ 已保存到表情包！';
+    btnSaveCustomEmotion.textContent = i18n.t('savedSuccess');
     setTimeout(() => {
-      btnSaveCustomEmotion.textContent = '💾 保存至表情包';
+      btnSaveCustomEmotion.textContent = i18n.t('btnSaveCustom');
     }, 2000);
   });
 
