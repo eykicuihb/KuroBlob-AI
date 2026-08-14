@@ -63,6 +63,7 @@ Return ONLY a JSON object:
           save(){}, restore(){}, beginPath(){}, closePath(){},
           moveTo(){}, lineTo(){}, arc(){}, fill(){}, stroke(){},
           quadraticCurveTo(){}, bezierCurveTo(){}, roundRect(){},
+          fillRect(){}, strokeRect(){}, ellipse(){}, clip(){},
           fillStyle:'', strokeStyle:'', lineWidth:1, shadowColor:'', shadowBlur:0
         }, 1.0);
 
@@ -117,7 +118,87 @@ Return ONLY a JSON object:
     let particleType = llmResult?.particles?.type || 'SPARKLE';
     let particleColor = llmResult?.particles?.color || '#00F2FE';
 
-    // A. Headgear & Ear Accessories
+    // A. Headgear & Role Helmets
+    if (/uncle sam|山姆大叔|山姆|星条旗|usa|america/i.test(ct)) {
+      emoji = '🎩';
+      colorStart = '#1E3A8A';
+      colorEnd = '#DC2626';
+      glowColor = 'rgba(220, 38, 38, 0.45)';
+      nameZh = '山姆大叔';
+      nameEn = 'Uncle Sam';
+      drawingSteps.push(`
+  // --- Uncle Sam Patriotic Top Hat & Bowtie ---
+  const hatY = -72;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.strokeStyle = '#CBD5E1';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.ellipse(0, hatY, 62, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-34, hatY - 70, 68, 70);
+  ctx.clip();
+  for (let s = 0; s < 7; s++) {
+    ctx.fillStyle = s % 2 === 0 ? '#EF4444' : '#FFFFFF';
+    ctx.fillRect(-34 + s * (68 / 7), hatY - 70, 68 / 7 + 0.5, 70);
+  }
+  ctx.restore();
+  ctx.strokeStyle = '#1E293B';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(-34, hatY - 70, 68, 70);
+  ctx.fillStyle = '#1D4ED8';
+  ctx.fillRect(-35, hatY - 24, 70, 22);
+  ctx.fillStyle = '#FFFFFF';
+  for (let star = -22; star <= 22; star += 11) {
+    ctx.beginPath();
+    ctx.arc(star, hatY - 13, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Red Bowtie
+  ctx.fillStyle = '#DC2626';
+  ctx.beginPath();
+  ctx.moveTo(-16, 44);
+  ctx.lineTo(-28, 36);
+  ctx.lineTo(-28, 52);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(16, 44);
+  ctx.lineTo(28, 36);
+  ctx.lineTo(28, 52);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, 44, 5, 0, Math.PI * 2);
+  ctx.fill();`);
+    }
+
+    if (/delivery|courier|外卖|送外卖|快递|美团|饿了么|骑手/i.test(ct)) {
+      emoji = '🛵';
+      colorStart = '#F59E0B';
+      colorEnd = '#D97706';
+      glowColor = 'rgba(245, 158, 11, 0.45)';
+      nameZh = '送外卖员';
+      nameEn = 'Delivery Rider';
+      drawingSteps.push(`
+  // --- Delivery Rider Safety Helmet ---
+  ctx.fillStyle = '#F59E0B';
+  ctx.strokeStyle = '#D97706';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(0, -58, 50, Math.PI, 0);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+  ctx.beginPath();
+  ctx.roundRect(-40, -56, 80, 16, 5);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(-30, -74, 60, 5);`);
+    }
+
     if (/duck|鸭|小黄鸭/i.test(ct)) {
       emoji = '🐥';
       drawingSteps.push(`
@@ -318,8 +399,126 @@ Return ONLY a JSON object:
   ctx.stroke();`);
     }
 
+    if (/police|officer|cop|警察|警官|阿sir/i.test(ct)) {
+      emoji = '👮';
+      drawingSteps.push(`
+  // --- Police Peaked Cap ---
+  ctx.fillStyle = '#1E3A8A';
+  ctx.beginPath();
+  ctx.moveTo(-48, -62);
+  ctx.lineTo(-44, -92);
+  ctx.lineTo(44, -92);
+  ctx.lineTo(48, -62);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#0F172A';
+  ctx.beginPath();
+  ctx.ellipse(0, -60, 46, 8, 0, 0, Math.PI);
+  ctx.fill();
+  ctx.fillStyle = '#F59E0B';
+  ctx.beginPath();
+  ctx.arc(0, -78, 6, 0, Math.PI * 2);
+  ctx.fill();`);
+    }
+
+    if (/graduate|student|professor|doctorate|学士|硕士|博士|毕业/i.test(ct)) {
+      emoji = '🎓';
+      drawingSteps.push(`
+  // --- Academic Mortarboard ---
+  ctx.fillStyle = '#0F172A';
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, -102);
+  ctx.lineTo(60, -82);
+  ctx.lineTo(0, -62);
+  ctx.lineTo(-60, -82);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = '#F59E0B';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(0, -82);
+  ctx.lineTo(42, -58 + Math.sin(t * 3) * 4);
+  ctx.stroke();`);
+    }
+
+    if (/headphone|dj|music|耳机|听歌|摇滚/i.test(ct)) {
+      emoji = '🎧';
+      drawingSteps.push(`
+  // --- Glowing DJ Headphones ---
+  ctx.strokeStyle = '#6366F1';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(0, -22, 60, Math.PI, 0);
+  ctx.stroke();
+  ctx.fillStyle = '#1E1B4B';
+  ctx.strokeStyle = '#A855F7';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(-66, -38, 16, 36, 8);
+  ctx.roundRect(50, -38, 16, 36, 8);
+  ctx.fill();
+  ctx.stroke();`);
+    }
+
     // B. Eyewear & Face Props
-    if (/glasses|黑框|眼镜/i.test(ct) || (/geek|programmer|程序员|码农/i.test(ct) && !/hacker|黑客/i.test(ct))) {
+    if (/white sunglasses|白.*墨镜|白色.*墨镜|白.*太阳镜|白色.*太阳镜/i.test(ct)) {
+      emoji = '🕶️';
+      drawingSteps.push(`
+  // --- Trendy White Frame Sunglasses ---
+  ctx.fillStyle = '#FFFFFF';
+  ctx.strokeStyle = '#CBD5E1';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.roundRect(-54, -28, 38, 32, 10);
+  ctx.roundRect(16, -28, 38, 32, 10);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillRect(-18, -16, 36, 6);
+  ctx.fillStyle = '#0F172A';
+  ctx.beginPath();
+  ctx.roundRect(-49, -23, 28, 22, 6);
+  ctx.roundRect(21, -23, 28, 22, 6);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.beginPath();
+  ctx.moveTo(-45, -20);
+  ctx.lineTo(-32, -6);
+  ctx.lineTo(-36, -6);
+  ctx.lineTo(-49, -20);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(25, -20);
+  ctx.lineTo(38, -6);
+  ctx.lineTo(34, -6);
+  ctx.lineTo(21, -20);
+  ctx.fill();`);
+    } else if (/sunglasses|墨镜|太阳镜|shades/i.test(ct)) {
+      emoji = '🕶️';
+      drawingSteps.push(`
+  // --- Classic Black Sunglasses ---
+  ctx.fillStyle = '#0F172A';
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.roundRect(-52, -26, 34, 28, 8);
+  ctx.roundRect(18, -26, 34, 28, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-18, -12);
+  ctx.lineTo(18, -12);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.beginPath();
+  ctx.moveTo(-44, -20);
+  ctx.lineTo(-30, -6);
+  ctx.lineTo(-34, -6);
+  ctx.lineTo(-48, -20);
+  ctx.fill();`);
+    } else if (/glasses|黑框|眼镜/i.test(ct) || (/geek|programmer|程序员|码农/i.test(ct) && !/hacker|黑客/i.test(ct))) {
       drawingSteps.push(`
   // --- Geek Glasses ---
   ctx.strokeStyle = '#0F172A';
@@ -327,9 +526,6 @@ Return ONLY a JSON object:
   ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
   ctx.beginPath();
   ctx.roundRect(-52, -26, 32, 28, 6);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
   ctx.roundRect(20, -26, 32, 28, 6);
   ctx.fill();
   ctx.stroke();
@@ -365,6 +561,81 @@ Return ONLY a JSON object:
   ctx.stroke();`);
     }
 
+    // C. Vehicle & Driving Controls
+    if (/motorcycle|motorbike|biker|摩托|机车|电动车|骑车/i.test(ct)) {
+      emoji = '🏍️';
+      drawingSteps.push(`
+  // --- Motorcycle Handlebars & Mirror ---
+  const bikeY = 50 + Math.sin(t * 8) * 1.5;
+  ctx.fillStyle = '#3B82F6';
+  ctx.strokeStyle = '#1D4ED8';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-45, bikeY + 22);
+  ctx.lineTo(-26, bikeY - 12);
+  ctx.lineTo(26, bikeY - 12);
+  ctx.lineTo(45, bikeY + 22);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-72, bikeY - 4);
+  ctx.lineTo(72, bikeY - 4);
+  ctx.stroke();
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(-78, bikeY - 8, 14, 8);
+  ctx.fillRect(64, bikeY - 8, 14, 8);
+  ctx.fillStyle = '#E2E8F0';
+  ctx.strokeStyle = '#0F172A';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(-62, bikeY - 20, 8, 0, Math.PI * 2);
+  ctx.arc(62, bikeY - 20, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();`);
+    } else if (/car|drive|driver|steering|车|汽车|开车|驾驶|司机|方向盘/i.test(ct)) {
+      emoji = '🚗';
+      drawingSteps.push(`
+  // --- Driving Sports Steering Wheel ---
+  const wheelY = 46;
+  const wheelRot = Math.sin(t * 2.5) * 0.22;
+  ctx.save();
+  ctx.translate(0, wheelY);
+  ctx.rotate(wheelRot);
+  ctx.strokeStyle = '#1E293B';
+  ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.arc(0, 0, 40, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = '#DC2626';
+  ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.arc(0, 0, 40, -Math.PI * 0.8, -Math.PI * 0.5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, 40, -Math.PI * 0.5, -Math.PI * 0.2);
+  ctx.stroke();
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-38, 0);
+  ctx.lineTo(38, 0);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, 38);
+  ctx.stroke();
+  ctx.fillStyle = '#0F172A';
+  ctx.beginPath();
+  ctx.arc(0, 0, 13, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#F59E0B';
+  ctx.beginPath();
+  ctx.arc(0, 0, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();`);
+    }
+
     if (/bikini|比基尼|海边|沙滩|夏日|泳装|度假|beach|summer|ocean/i.test(ct)) {
       emoji = '👙';
       if (!llmResult) {
@@ -394,23 +665,6 @@ Return ONLY a JSON object:
   ctx.arc(flowerX, flowerY, 6, 0, Math.PI * 2);
   ctx.fill();
 
-  // --- Chic Sunglasses ---
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-  ctx.strokeStyle = '#F43F5E';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.roundRect(-52, -26, 34, 28, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.roundRect(18, -26, 34, 28, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-18, -12);
-  ctx.lineTo(18, -12);
-  ctx.stroke();
-
   // --- Tropical Bikini Top ---
   ctx.fillStyle = '#EC4899';
   ctx.strokeStyle = '#FFFFFF';
@@ -429,7 +683,7 @@ Return ONLY a JSON object:
   ctx.fill();`);
     }
 
-    // C. Handheld / Props
+    // D. Handheld Props
     if (/coffee|咖啡|mug/i.test(ct)) {
       emoji = '☕';
       drawingSteps.push(`
