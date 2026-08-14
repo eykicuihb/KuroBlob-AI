@@ -22,8 +22,16 @@ export class SentimentAnalyzer {
         regex: /(写一段|写一篇|生成|代码|故事|总结|大纲|write|generate|create|code|story|summarize)/i
       },
       HAPPY: {
-        keywords: ['哈哈', '太棒了', '谢谢', '厉害', '牛', '喜欢', '开心', '赞', '幽默', '笑话', 'haha', 'great', 'awesome', 'thanks', 'cool', 'love', 'happy', 'joke', 'nice'],
-        regex: /(哈哈|太棒了|谢谢|厉害|开心|赞|笑话|haha|great|awesome|thanks|love)/i
+        keywords: ['你好', 'hello', 'hi', '哈喽', '在吗', '早上好', '下午好', '晚上好', '笑一个', '笑一笑', '开心点', '笑', '哈哈', '太棒了', '谢谢', '厉害', '牛', '喜欢', '开心', '赞', 'haha', 'great', 'awesome', 'thanks', 'cool', 'love', 'happy', 'nice', 'smile'],
+        regex: /(hello|hi|你好|哈喽|在吗|笑一个|笑一笑|开心点|哈哈|太棒了|谢谢|厉害|开心|赞|great|awesome|thanks|love|smile)/i
+      },
+      LAUGHING: {
+        keywords: ['笑话', '讲个笑话', '说个笑话', '来个笑话', '搞笑', '逗我', '逗逗我', '笑死', '爆笑', '太逗了', 'joke', 'tell a joke', 'lol', 'lmao', 'rofl', 'hilarious', 'funny'],
+        regex: /(笑话|讲笑话|说笑话|来个笑话|逗我|笑死|爆笑|太逗了|搞笑|joke|hilarious|funny)/i
+      },
+      SUNNY: {
+        keywords: ['天气', '今天天气', '晴天', '出太阳', '好天气', '温度', 'weather', 'sunny', 'sunshine', 'forecast'],
+        regex: /(天气|今天天气|晴天|出太阳|好天气|weather|sunny|forecast)/i
       },
       SURPRISED: {
         keywords: ['哇', '真的吗', '天啊', '竟然', '难以置信', '震惊', 'wow', 'omg', 'really', 'unbelievable', 'shocking', 'surprised'],
@@ -40,10 +48,6 @@ export class SentimentAnalyzer {
       LOVE: {
         keywords: ['爱', '亲亲', '可爱', '表白', '喜欢你', '心动', '粉色', 'cute', 'love you', 'adore', 'sweet', 'heart'],
         regex: /(爱|可爱|心动|表白|喜欢你|cute|love|sweet)/i
-      },
-      LAUGHING: {
-        keywords: ['笑死', '爆笑', '太逗了', '搞笑', 'lol', 'lmao', 'rofl', 'hilarious', 'funny'],
-        regex: /(笑死|爆笑|太逗了|搞笑|lol|lmao|hilarious)/i
       },
       SAD: {
         keywords: ['难过', '伤心', '哭了', '遗憾', '痛苦', '失望', 'sad', 'cry', 'disappointed', 'sorry', 'heartbroken'],

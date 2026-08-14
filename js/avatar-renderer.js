@@ -1,8 +1,4 @@
-/**
- * AvatarRenderer - Dynamic Expression Canvas Engine
- * Replicates the video's monochrome blob avatar with 3D wrapping orbital rainbow rings,
- * elastic shape morphing, pill eyes, and emotion state transitions.
- */
+import { soundFx } from './sound-fx.js';
 
 export class AvatarRenderer {
   constructor(canvas) {
@@ -44,6 +40,21 @@ export class AvatarRenderer {
     this.blinkProgress = 0; // 0 = open, 1 = closed
     this.isBlinking = false;
     this.nextBlinkTime = Date.now() + 3000;
+    
+    // Web VTuber Face Tracking State (Bolder live reactive physics)
+    this.faceTracking = {
+      active: false,
+      roll: 0,
+      offsetX: 0,
+      offsetY: 0,
+      bodyX: 0,
+      bodyY: 0,
+      mouthOpen: 0,
+      smoothRoll: 0,
+      smoothBodyX: 0,
+      smoothBodyY: 0,
+      smoothMouth: 0
+    };
     
     // 3D Orbital Rings (for THINKING state - frames 19-22 in video)
     this.orbitalRings = [
@@ -147,23 +158,171 @@ export class AvatarRenderer {
   bindEvents() {
     window.addEventListener('resize', () => this.resize());
     
-    this.canvas.addEventListener('mousemove', (e) => {
+    this.isDragging = false;
+    this.dragTarget = null; // 'EYES' | 'BODY'
+    this.dragStartPos = { x: 0, y: 0 };
+    this.dragStartTime = 0;
+    this.dragVertexAngle = 0;
+    this.onEyePositionChange = null;
+
+    const getPos = (e) => {
       const rect = this.canvas.getBoundingClientRect();
-      this.mouse.x = e.clientX - rect.left;
-      this.mouse.y = e.clientY - rect.top;
+      const clientX = e.touches && e.touches[0] ? e.touches[0].clientX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : e.clientX);
+      const clientY = e.touches && e.touches[0] ? e.touches[0].clientY : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : e.clientY);
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    };
+
+    const isNearEyes = (pos) => {
+      const eyeX = this.x + (this.studioMode ? this.customConfig.eyePosX : 0) + this.eyeOffset.x;
+      const eyeY = this.y + (this.studioMode ? this.customConfig.eyePosY : 0) + this.eyeOffset.y - 12;
+      return Math.hypot(pos.x - eyeX, pos.y - eyeY) < 38;
+    };
+
+    const handlePointerDown = (e) => {
+      const pos = getPos(e);
+      this.mouse.x = pos.x;
+      this.mouse.y = pos.y;
       this.mouse.isOver = true;
-    });
-    
+      this.isDragging = true;
+      this.dragStartPos = { ...pos };
+      this.dragStartTime = Date.now();
+
+      if (isNearEyes(pos)) {
+        this.dragTarget = 'EYES';
+        this.canvas.style.cursor = 'grabbing';
+      } else {
+        const dx = pos.x - this.x;
+        const dy = pos.y - this.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist <= this.baseRadius * 1.6) {
+          this.dragTarget = 'BODY';
+          this.dragVertexAngle = Math.atan2(dy, dx);
+          this.canvas.style.cursor = 'grabbing';
+        } else {
+          this.dragTarget = null;
+        }
+      }
+    };
+
+    const handlePointerMove = (e) => {
+      const pos = getPos(e);
+      this.mouse.x = pos.x;
+      this.mouse.y = pos.y;
+      this.mouse.isOver = true;
+
+      if (!this.isDragging) {
+        if (isNearEyes(pos)) {
+          this.canvas.style.cursor = 'move';
+        } else if (Math.hypot(pos.x - this.x, pos.y - this.y) <= this.baseRadius * 1.3) {
+          this.canvas.style.cursor = 'grab';
+        } else {
+          this.canvas.style.cursor = 'default';
+        }
+        return;
+      }
+
+      if (this.dragTarget === 'EYES') {
+        const rawX = pos.x - this.x;
+        const rawY = pos.y - this.y + 12;
+        const clampedX = Math.max(-45, Math.min(45, Math.round(rawX)));
+        const clampedY = Math.max(-45, Math.min(45, Math.round(rawY)));
+        this.customConfig.eyePosX = clampedX;
+        this.customConfig.eyePosY = clampedY;
+        if (this.onEyePositionChange) {
+          this.onEyePositionChange(clampedX, clampedY);
+        }
+      } else if (this.dragTarget === 'BODY') {
+        const dx = pos.x - this.x;
+        const dy = pos.y - this.y;
+        const pullDist = Math.hypot(dx, dy);
+        const pullAngle = Math.atan2(dy, dx);
+
+        for (let i = 0; i < this.numPoints; i++) {
+          const ptAngle = (i / this.numPoints) * Math.PI * 2;
+          let diff = Math.abs(ptAngle - pullAngle);
+          while (diff > Math.PI) diff = Math.abs(diff - Math.PI * 2);
+
+          if (diff < Math.PI * 0.45) {
+            const weight = Math.cos((diff / (Math.PI * 0.45)) * (Math.PI / 2));
+            const targetR = Math.max(this.baseRadius * 0.5, Math.min(this.baseRadius * 2.5, pullDist));
+            this.currentRadii[i] = this.currentRadii[i] * (1 - weight * 0.6) + targetR * (weight * 0.6);
+          }
+        }
+      }
+    };
+
+    const handlePointerUp = (e) => {
+      if (!this.isDragging) return;
+      const duration = Date.now() - this.dragStartTime;
+      const pos = getPos(e);
+      const moved = Math.hypot(pos.x - this.dragStartPos.x, pos.y - this.dragStartPos.y);
+
+      if (this.dragTarget === 'BODY') {
+        if (duration < 280 && moved < 10) {
+          // Poke tap!
+          this.applyImpulse(35);
+          this.triggerBlink();
+          soundFx.poke();
+        } else {
+          // Stretch release!
+          let maxOffset = 0;
+          for (let i = 0; i < this.numPoints; i++) {
+            const diff = this.currentRadii[i] - this.targetRadii[i];
+            if (Math.abs(diff) > Math.abs(maxOffset)) maxOffset = diff;
+            this.velocities[i] -= diff * 0.4;
+          }
+          const intensity = Math.min(2.0, Math.max(0.6, Math.abs(maxOffset) / 35));
+          soundFx.boing(intensity);
+        }
+      } else if (this.dragTarget === 'EYES') {
+        soundFx.pop(750, 0.08);
+      }
+
+      this.isDragging = false;
+      this.dragTarget = null;
+      this.canvas.style.cursor = isNearEyes(pos) ? 'move' : 'grab';
+    };
+
+    // Mouse listeners
+    this.canvas.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+
     this.canvas.addEventListener('mouseleave', () => {
-      this.mouse.isOver = false;
-      this.targetEyeOffset.x = 0;
-      this.targetEyeOffset.y = 0;
+      if (!this.isDragging) {
+        this.mouse.isOver = false;
+        this.targetEyeOffset.x = 0;
+        this.targetEyeOffset.y = 0;
+      }
     });
-    
-    this.canvas.addEventListener('click', () => {
-      // Trigger a fun squish impulse on click
-      this.applyImpulse(25);
+
+    // Touch listeners (mobile tactile support)
+    this.canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handlePointerDown(e);
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (this.isDragging) {
+        e.preventDefault();
+        handlePointerMove(e);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', (e) => {
+      if (this.isDragging) {
+        handlePointerUp(e);
+      }
     });
+  }
+
+  triggerBlink() {
+    this.isBlinking = true;
+    this.blinkProgress = 0;
+    soundFx.blink();
   }
 
   applyImpulse(amount) {
@@ -179,6 +338,18 @@ export class AvatarRenderer {
     }
   }
 
+  setFaceTracking(active, config = {}) {
+    this.faceTracking.active = active;
+    if (config) {
+      if (config.roll !== undefined) this.faceTracking.roll = config.roll;
+      if (config.offsetX !== undefined) this.faceTracking.offsetX = config.offsetX;
+      if (config.offsetY !== undefined) this.faceTracking.offsetY = config.offsetY;
+      if (config.bodyX !== undefined) this.faceTracking.bodyX = config.bodyX;
+      if (config.bodyY !== undefined) this.faceTracking.bodyY = config.bodyY;
+      if (config.mouthOpen !== undefined) this.faceTracking.mouthOpen = config.mouthOpen;
+    }
+  }
+
   updateStudioConfig(newConfig) {
     this.studioMode = true;
     this.customConfig = { ...this.customConfig, ...newConfig };
@@ -189,10 +360,42 @@ export class AvatarRenderer {
     this.customPresets[id] = { ...config };
   }
 
+  applyGeneratedExpression(exp) {
+    if (!exp) return;
+    this.studioMode = true;
+    if (exp.body) {
+      if (exp.body.colorStart) this.customConfig.bodyColor1 = exp.body.colorStart;
+      if (exp.body.colorEnd) this.customConfig.bodyColor2 = exp.body.colorEnd;
+      if (exp.body.glowColor) this.customConfig.glowColor = exp.body.glowColor;
+      if (exp.body.glowBlur) this.customConfig.glowBlur = exp.body.glowBlur;
+    }
+    if (exp.eyes) {
+      if (exp.eyes.style) this.customConfig.eyeStyle = exp.eyes.style;
+      if (exp.eyes.color) this.eyeColor = exp.eyes.color;
+      if (exp.eyes.width) this.customConfig.eyeWidth = exp.eyes.width;
+      if (exp.eyes.height) this.customConfig.eyeHeight = exp.eyes.height;
+      if (exp.eyes.spacing) this.customConfig.eyeSpacing = exp.eyes.spacing;
+      if (exp.eyes.tilt !== undefined) this.customConfig.eyeTilt = (exp.eyes.tilt * 180) / Math.PI;
+    }
+    if (exp.rings) {
+      this.customConfig.showRings = !!exp.rings.enabled;
+    }
+    if (exp.particles) {
+      this.customConfig.showParticles = !!exp.particles.enabled;
+    }
+    if (typeof exp.drawAccessory === 'function') {
+      this.customDrawAccessory = exp.drawAccessory;
+    } else {
+      this.customDrawAccessory = null;
+    }
+    this.triggerBlink();
+  }
+
   setEmotion(emotion) {
     if (this.customPresets && this.customPresets[emotion]) {
       this.setStudioMode(true, this.customPresets[emotion]);
       this.targetEmotion = emotion;
+      soundFx.emotionReaction(emotion);
       return;
     }
 
@@ -203,6 +406,7 @@ export class AvatarRenderer {
     if (this.currentEmotion === emotion && this.targetEmotion === emotion) return;
     this.targetEmotion = emotion;
     this.transitionProgress = 0;
+    soundFx.emotionReaction(emotion);
   }
 
   setTheme(theme) {
@@ -768,7 +972,9 @@ export class AvatarRenderer {
     const lerpRate = 0.08;
     this.scaleX += (targetScaleX - this.scaleX) * lerpRate;
     this.scaleY += (targetScaleY - this.scaleY) * lerpRate;
-    this.rotation += (targetRotation - this.rotation) * lerpRate;
+    
+    const effectiveTargetRotation = this.faceTracking.active ? this.faceTracking.roll : targetRotation;
+    this.rotation += (effectiveTargetRotation - this.rotation) * (this.faceTracking.active ? 0.75 : lerpRate);
 
     if (this.studioMode) {
       targetEyeWidth = this.customConfig.eyeWidth;
@@ -867,6 +1073,12 @@ export class AvatarRenderer {
   }
 
   updateGazeTracking() {
+    if (this.faceTracking.active) {
+      this.eyeOffset.x += (this.faceTracking.offsetX - this.eyeOffset.x) * 0.75;
+      this.eyeOffset.y += (this.faceTracking.offsetY - this.eyeOffset.y) * 0.75;
+      return;
+    }
+
     if (this.mouse.isOver) {
       const dx = (this.mouse.x - this.x) * 0.12;
       const dy = (this.mouse.y - this.y) * 0.12;
@@ -995,10 +1207,17 @@ export class AvatarRenderer {
   }
 
   drawBlobBody() {
+    // Apply bold VTuber body position & leaning transformations
+    const bodyShiftX = this.faceTracking.active ? this.faceTracking.smoothBodyX : 0;
+    const bodyShiftY = this.faceTracking.active ? this.faceTracking.smoothBodyY : 0;
+    const rot = this.faceTracking.active ? this.faceTracking.smoothRoll : this.rotation;
+    const leanScaleX = this.faceTracking.active ? (1 + Math.abs(rot) * 0.22 - (bodyShiftY / 100) * 0.12) : 1;
+    const leanScaleY = this.faceTracking.active ? (1 - Math.abs(rot) * 0.15 + (bodyShiftY / 100) * 0.18) : 1;
+
     this.ctx.save();
-    this.ctx.translate(this.x, this.y);
-    this.ctx.rotate(this.rotation);
-    this.ctx.scale(this.scaleX, this.scaleY);
+    this.ctx.translate(this.x + bodyShiftX, this.y + bodyShiftY);
+    this.ctx.rotate(rot);
+    this.ctx.scale(this.scaleX * leanScaleX, this.scaleY * leanScaleY);
 
     // 1. Draw Back Accessories FIRST
     if (this.studioMode) {
@@ -1066,6 +1285,12 @@ export class AvatarRenderer {
       if (this.customConfig.auraAccessory === 'SNOW') this.drawSnowfall();
       if (this.customConfig.showCheeks) this.drawCheeks();
 
+      if (this.customDrawAccessory && typeof this.customDrawAccessory === 'function') {
+        try {
+          this.customDrawAccessory(this.ctx, this.time);
+        } catch (e) {}
+      }
+
       if (this.customConfig.shape !== 'ROBOT') {
         this.drawEyes();
       }
@@ -1096,6 +1321,37 @@ export class AvatarRenderer {
       }
     }
 
+    // 4. Draw Talking Mouth in VTuber Mode when user speaks
+    this.drawTalkingMouth();
+
+    this.ctx.restore();
+  }
+
+  drawTalkingMouth() {
+    if (!this.faceTracking.active || this.faceTracking.smoothMouth <= 0.08) return;
+
+    const mouthH = Math.min(24, Math.max(3, this.faceTracking.smoothMouth * 28));
+    const mouthW = Math.min(28, Math.max(8, 8 + this.faceTracking.smoothMouth * 20));
+    const mx = this.eyeOffset.x * 0.4;
+    const my = 26 + this.eyeOffset.y * 0.4;
+
+    this.ctx.save();
+    // Dark outer mouth
+    this.ctx.fillStyle = '#111115';
+    this.ctx.strokeStyle = '#2A2A35';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.ellipse(mx, my, mouthW, mouthH, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Cute pink tongue
+    if (mouthH > 6) {
+      this.ctx.fillStyle = '#FF2D55';
+      this.ctx.beginPath();
+      this.ctx.ellipse(mx, my + mouthH * 0.35, mouthW * 0.65, mouthH * 0.55, 0, 0, Math.PI);
+      this.ctx.fill();
+    }
     this.ctx.restore();
   }
 
@@ -1832,8 +2088,17 @@ export class AvatarRenderer {
 
   drawEyes() {
     const spacing = this.studioMode ? this.customConfig.eyeSpacing : this.eyeSpacing;
-    const posX = (this.studioMode ? this.customConfig.eyePosX : 0) + this.eyeOffset.x;
-    const posY = (this.studioMode ? this.customConfig.eyePosY : 0) + this.eyeOffset.y;
+    const basePosX = (this.studioMode ? this.customConfig.eyePosX : 0);
+    const basePosY = (this.studioMode ? this.customConfig.eyePosY : 0);
+
+    // Dynamic 3D Head-Eye Coupling in VTuber mode:
+    // When the human turns/tilts their head, eyes shift across the 3D spherical curvature
+    const headRoll = this.faceTracking.active ? this.rotation : 0;
+    const eyeCouplingX = this.faceTracking.active ? (this.eyeOffset.x * 1.6 + Math.sin(headRoll) * 32) : this.eyeOffset.x;
+    const eyeCouplingY = this.faceTracking.active ? (this.eyeOffset.y * 1.4 - (1 - Math.cos(headRoll)) * 20) : this.eyeOffset.y;
+
+    const posX = basePosX + eyeCouplingX;
+    const posY = basePosY + eyeCouplingY;
     let eyeY = -12 + posY;
     let leftEyeX = posX - spacing / 2;
     let rightEyeX = posX + spacing / 2;
@@ -1919,6 +2184,15 @@ export class AvatarRenderer {
         this.drawStarEye(rightEyeX, eyeY, rightW);
         return;
       }
+    }
+
+    // 3D Head-Eye Coupling in VTuber mode:
+    // Parallel tilt + perspective width asymmetry
+    if (this.faceTracking.active) {
+      leftTilt += headRoll * 0.85;
+      rightTilt += headRoll * 0.85;
+      leftW = Math.max(6, leftW * (1 - Math.sin(headRoll) * 0.35));
+      rightW = Math.max(6, rightW * (1 + Math.sin(headRoll) * 0.35));
     }
 
     // Left Pill Eye

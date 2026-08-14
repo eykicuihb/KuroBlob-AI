@@ -12,6 +12,7 @@ export const translations = {
     exportCode: '⚡ 导出嵌入代码',
     tabChat: '💬 AI 智能对话表情模式',
     tabStudio: '🎨 Avatar 萌系自定义设计工坊',
+    tabCreator: '🪄 AI 一键表情创造工坊',
     stageLabel: 'Avatar 画布舞台',
     manualLabel: '手动测试 60+ 萌系程序生成表情',
     btnTourStart: '✨ 播放 60+ 表情自然形变动画',
@@ -22,6 +23,17 @@ export const translations = {
     systemMeta: '系统对话',
     inputPlaceholder: '输入对话内容，测试表情判别与交互...',
     btnSend: '发送',
+
+    // Creator Studio Section
+    creatorTitle: '🪄 AI 一键表情创造工坊',
+    creatorSubtitle: '搭载 kuroblob-expression-creator Agent Skill，输入任意自然语言创意，大模型即时推导 Canvas 2D 物理动效并实时上身！',
+    creatorPromptLabel: '🎨 创意 Prompt 描述',
+    btnGenerateExp: '⚡ 召唤大模型生成并实时上身',
+    btnGeneratingExp: '⏳ 大模型正在构建物理方程与 Canvas 代码...',
+    creatorCodeLabel: '📜 生成的 Canvas 2D 物理动效代码',
+    btnCopyCode: '📋 复制代码',
+    btnApplyExp: '✨ 重新上身预览',
+    expGeneratedSuccess: '✅ 成功生成并实时装配新表情！',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -103,7 +115,30 @@ export const translations = {
     promptBored: '🙄 无聊翻白眼',
     promptCool: '😎 酷炫大佬',
     promptRobot: '🤖 机器人模式',
-    promptEww: '🤢 嫌弃拉胯'
+    promptEww: '🤢 嫌弃拉胯',
+
+    // Multimodal & AI BYOK
+    soundOn: '音效已开',
+    soundOff: '音效已关',
+    vtuberMode: 'VTuber 面捕',
+    vtuberStop: '停止面捕',
+    aiSettings: 'AI 设置',
+    canvasHint: '💡 提示：可直接用鼠标/手指拉伸果冻捏脸，或拖拽双眼移动',
+    modalAITitle: '🤖 配置真实 AI 大模型 (BYOK)',
+    modalAIDesc: '接入自定义大模型 API，支持流式对话并根据返回的情绪 Tag 实时驱动 KuroBlob 动态表情与动作。',
+    lblAIEnable: '启用真实大模型对话',
+    lblAIProvider: 'AI 厂商 / 预设服务',
+    lblAIBaseUrl: 'Base URL (API 端点)',
+    lblAIApiKey: 'API Key (仅保存在本地浏览器 LocalStorage)',
+    lblAIModel: '模型名称 (Model Name)',
+    btnFetchModels: '🔄 获取可用模型列表',
+    btnFetchLoading: '⏳ 获取模型列表中...',
+    modelsFetchedSuccess: '✅ 成功获取 {count} 个可用模型 (来源: {source})',
+    modelsFetchFailed: '⚠️ 未能获取模型列表（本地 Ollama 请确认已运行 ollama serve；或直接输入模型名称）',
+    selectModelPlaceholder: '-- 从检测到的模型列表中快速选择 --',
+    btnCancel: '取消',
+    btnSaveAI: '💾 保存并生效',
+    aiSavedSuccess: '✅ AI 大模型配置已保存生效！'
   },
   'en': {
     brandTitle: 'KuroBlob AI Expression Engine',
@@ -113,6 +148,7 @@ export const translations = {
     exportCode: '⚡ Export Code',
     tabChat: '💬 AI Dialogue & Emotion Mode',
     tabStudio: '🎨 Avatar Creator Studio',
+    tabCreator: '🪄 AI Expression Creator Studio',
     stageLabel: 'Avatar Canvas Stage',
     manualLabel: 'Manual Test 60+ Procedural Expressions',
     btnTourStart: '✨ Auto Tour 60+ Expressions Morphing',
@@ -123,10 +159,21 @@ export const translations = {
     systemMeta: 'System Dialogue',
     inputPlaceholder: 'Type a message to test AI sentiment classifier...',
     btnSend: 'Send',
+
+    // Creator Studio Section
+    creatorTitle: '🪄 AI Expression Creator Studio',
+    creatorSubtitle: 'Powered by kuroblob-expression-creator Skill. Type any creative prompt and the AI will synthesize live Canvas 2D physics and mount it directly!',
+    creatorPromptLabel: '🎨 Creative Prompt Description',
+    btnGenerateExp: '⚡ Generate with LLM & Preview Live',
+    btnGeneratingExp: '⏳ LLM is synthesizing physics equations and Canvas code...',
+    creatorCodeLabel: '📜 Generated Canvas 2D Code & Parameters',
+    btnCopyCode: '📋 Copy Code',
+    btnApplyExp: '✨ Re-apply & Preview',
+    expGeneratedSuccess: '✅ Successfully generated and mounted new expression!',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',
-    studioSubtitle: 'Design your custom 3D liquid mercury procedural avatar',
+    studioSubtitle: 'Design your own living 3D procedural avatar companion',
     group1: '1. Body Shape & Elasticity',
     group2: '2. Capsule Eyes & Expressions',
     group3: '3. Accessories & Aura',
@@ -177,15 +224,15 @@ export const translations = {
     optAuraFire: '🔥 Flashing Flames',
 
     // Shape Chips
-    shapeBlob: '💧 Mercury Blob',
+    shapeBlob: '💧 Liquid Mercury',
     shapeCloud: '☁️ Cloud',
     shapeTornado: '🌪️ Tornado',
     shapeUFO: '🛸 UFO Saucer',
-    shapeCat: '🐱 Neko Ears',
-    shapeRabbit: '🐰 Bunny Ears',
+    shapeCat: '🐱 Cat Ears',
+    shapeRabbit: '🐰 Rabbit Ears',
     shapePanda: '🐼 Panda Ears',
-    shapeRobot: '🤖 Robot Box',
-    shapeTriangle: '📐 Thinking Triangle',
+    shapeRobot: '🤖 Robot Square',
+    shapeTriangle: '📐 Triangle Focus',
 
     // Eye Chips
     eyePill: '💊 Standard Capsule',
@@ -204,18 +251,43 @@ export const translations = {
     promptBored: '🙄 So Boring',
     promptCool: '😎 Sunglasses Boss',
     promptRobot: '🤖 Robot Matrix',
-    promptEww: '🤢 Disgusted Eww'
+    promptEww: '🤢 Disgusted Eww',
+
+    // Multimodal & AI BYOK
+    soundOn: 'Sound On',
+    soundOff: 'Sound Muted',
+    vtuberMode: 'VTuber Mode',
+    vtuberStop: 'Stop VTuber',
+    aiSettings: 'AI Settings',
+    canvasHint: '💡 Tip: Drag directly on the jelly blob to stretch & squeeze, or drag eyes to reposition',
+    modalAITitle: '🤖 Bring Your Own AI Model (BYOK)',
+    modalAIDesc: 'Connect any OpenAI-compatible API to stream chat with real-time emotion tag detection.',
+    lblAIEnable: 'Enable Real AI Chat',
+    lblAIProvider: 'AI Provider / Preset',
+    lblAIBaseUrl: 'Base URL (API Endpoint)',
+    lblAIApiKey: 'API Key (Stored only in local browser)',
+    lblAIModel: 'Model Name',
+    btnFetchModels: '🔄 Fetch Models',
+    btnFetchLoading: '⏳ Fetching Models...',
+    modelsFetchedSuccess: '✅ Detected {count} available models (Source: {source})',
+    modelsFetchFailed: '⚠️ Cannot fetch models. If using Ollama, ensure `ollama serve` is running; or type model name directly.',
+    selectModelPlaceholder: '-- Select from detected models --',
+    btnCancel: 'Cancel',
+    btnSaveAI: '💾 Save & Apply',
+    aiSavedSuccess: '✅ AI Model settings saved successfully!'
   }
 };
 
 export class I18nManager {
   constructor() {
-    this.lang = localStorage.getItem('KUROBLOB_LANG') || 'zh-CN';
+    this.lang = typeof localStorage !== 'undefined' ? (localStorage.getItem('KUROBLOB_LANG') || 'zh-CN') : 'zh-CN';
   }
 
   setLanguage(lang) {
     this.lang = lang;
-    localStorage.setItem('KUROBLOB_LANG', lang);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('KUROBLOB_LANG', lang);
+    }
     this.applyTranslations();
   }
 
@@ -224,8 +296,14 @@ export class I18nManager {
     return this.lang;
   }
 
-  t(key) {
-    return translations[this.lang]?.[key] || translations['zh-CN']?.[key] || key;
+  t(key, params = {}) {
+    let str = translations[this.lang]?.[key] || translations['zh-CN']?.[key] || key;
+    if (typeof str === 'string' && params) {
+      Object.entries(params).forEach(([k, v]) => {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+      });
+    }
+    return str;
   }
 
   applyTranslations() {
@@ -245,18 +323,7 @@ export class I18nManager {
       }
     });
 
-    // 3. Option elements
-    document.querySelectorAll('option[data-i18n]').forEach(opt => {
-      const key = opt.dataset.i18n;
-      if (this.t(key)) {
-        opt.textContent = this.t(key);
-      }
-    });
-
-    // 4. Lang toggle button label
-    const langText = document.getElementById('langText');
-    if (langText) {
-      langText.textContent = this.lang === 'zh-CN' ? 'English' : '中文';
-    }
+    // 3. Document Title
+    document.title = `${this.t('brandTitle')} - Living 3D Procedural Avatar`;
   }
 }
