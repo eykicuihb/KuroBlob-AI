@@ -943,7 +943,7 @@ export class AvatarRenderer {
     this.scaleY += (targetScaleY - this.scaleY) * lerpRate;
     
     const effectiveTargetRotation = this.faceTracking.active ? this.faceTracking.roll : targetRotation;
-    this.rotation += (effectiveTargetRotation - this.rotation) * (this.faceTracking.active ? 0.25 : lerpRate);
+    this.rotation += (effectiveTargetRotation - this.rotation) * (this.faceTracking.active ? 0.75 : lerpRate);
 
     if (this.studioMode) {
       targetEyeWidth = this.customConfig.eyeWidth;
@@ -1043,8 +1043,8 @@ export class AvatarRenderer {
 
   updateGazeTracking() {
     if (this.faceTracking.active) {
-      this.eyeOffset.x += (this.faceTracking.offsetX - this.eyeOffset.x) * 0.25;
-      this.eyeOffset.y += (this.faceTracking.offsetY - this.eyeOffset.y) * 0.25;
+      this.eyeOffset.x += (this.faceTracking.offsetX - this.eyeOffset.x) * 0.75;
+      this.eyeOffset.y += (this.faceTracking.offsetY - this.eyeOffset.y) * 0.75;
       return;
     }
 
@@ -2051,8 +2051,17 @@ export class AvatarRenderer {
 
   drawEyes() {
     const spacing = this.studioMode ? this.customConfig.eyeSpacing : this.eyeSpacing;
-    const posX = (this.studioMode ? this.customConfig.eyePosX : 0) + this.eyeOffset.x;
-    const posY = (this.studioMode ? this.customConfig.eyePosY : 0) + this.eyeOffset.y;
+    const basePosX = (this.studioMode ? this.customConfig.eyePosX : 0);
+    const basePosY = (this.studioMode ? this.customConfig.eyePosY : 0);
+
+    // Dynamic 3D Head-Eye Coupling in VTuber mode:
+    // When the human turns/tilts their head, eyes shift across the 3D spherical curvature
+    const headRoll = this.faceTracking.active ? this.rotation : 0;
+    const eyeCouplingX = this.faceTracking.active ? (this.eyeOffset.x * 1.6 + Math.sin(headRoll) * 32) : this.eyeOffset.x;
+    const eyeCouplingY = this.faceTracking.active ? (this.eyeOffset.y * 1.4 - (1 - Math.cos(headRoll)) * 20) : this.eyeOffset.y;
+
+    const posX = basePosX + eyeCouplingX;
+    const posY = basePosY + eyeCouplingY;
     let eyeY = -12 + posY;
     let leftEyeX = posX - spacing / 2;
     let rightEyeX = posX + spacing / 2;
@@ -2138,6 +2147,15 @@ export class AvatarRenderer {
         this.drawStarEye(rightEyeX, eyeY, rightW);
         return;
       }
+    }
+
+    // 3D Head-Eye Coupling in VTuber mode:
+    // Parallel tilt + perspective width asymmetry
+    if (this.faceTracking.active) {
+      leftTilt += headRoll * 0.85;
+      rightTilt += headRoll * 0.85;
+      leftW = Math.max(6, leftW * (1 - Math.sin(headRoll) * 0.35));
+      rightW = Math.max(6, rightW * (1 + Math.sin(headRoll) * 0.35));
     }
 
     // Left Pill Eye
