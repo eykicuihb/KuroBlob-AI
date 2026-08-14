@@ -157,70 +157,157 @@ Keep responses engaging, concise, and helpful.`;
 
   /**
    * Fetch available models from Ollama / OpenAI-compatible API
+   * Supports automatic protocol fixing, dual IPv4/IPv6 localhost resolution, and CORS-friendly requests.
    */
   async fetchModels(customBaseUrl, customApiKey) {
-    let baseUrl = (customBaseUrl || this.config.baseUrl || '').trim();
-    if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
-    const apiKey = customApiKey !== undefined ? customApiKey : this.config.apiKey;
+    let rawUrl = (customBaseUrl || this.config.baseUrl || '').trim();
+    if (!rawUrl) rawUrl = 'http://127.0.0.1:11434';
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      rawUrl = `http://${rawUrl}`;
+    }
+    if (rawUrl.endsWith('/')) rawUrl = rawUrl.slice(0, -1);
 
-    const headers = { 'Content-Type': 'application/json' };
+    const apiKey = customApiKey !== undefined ? customApiKey : this.config.apiKey;
+    const headers = {};
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-    const models = new Set();
+    const modelsSet = new Set();
+    const candidateEndpoints = [];
 
-    // 1. Try Ollama native tags endpoint (/api/tags)
-    try {
-      const ollamaTagsUrl = baseUrl.replace(/\/v1\/?$/, '') + '/api/tags';
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
-      const res = await fetch(ollamaTagsUrl, { method: 'GET', headers, signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.models && Array.isArray(data.models)) {
-          data.models.forEach(m => {
-            if (m.name) models.add(m.name);
-            else if (m.model) models.add(m.model);
-          });
-          if (models.size > 0) {
-            return { success: true, source: 'Ollama', models: Array.from(models) };
-          }
-        }
-      }
-    } catch (e) {
-      // Continue to OpenAI /models
+    // 1. Ollama native endpoints
+    const baseWithoutV1 = rawUrl.replace(/\/v1\/?$/, '');
+    candidateEndpoints.push({ url: `${baseWithoutV1}/api/tags`, type: 'ollama' });
+    if (baseWithoutV1.includes('localhost')) {
+      candidateEndpoints.push({ url: baseWithoutV1.replace('localhost', '127.0.0.1') + '/api/tags', type: 'ollama' });
+    } else if (baseWithoutV1.includes('127.0.0.1')) {
+      candidateEndpoints.push({ url: baseWithoutV1.replace('127.0.0.1', 'localhost') + '/api/tags', type: 'ollama' });
+    } else {
+      // Fallback local endpoints if remote host failed
+      candidateEndpoints.push({ url: 'http://127.0.0.1:11434/api/tags', type: 'ollama' });
+      candidateEndpoints.push({ url: 'http://localhost:11434/api/tags', type: 'ollama' });
     }
 
-    // 2. Try Standard OpenAI /v1/models endpoint
-    try {
-      let modelsUrl = baseUrl;
-      if (!modelsUrl.endsWith('/models')) {
-        modelsUrl = modelsUrl.endsWith('/v1') ? `${modelsUrl}/models` : `${modelsUrl}/v1/models`;
-      }
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-      const res = await fetch(modelsUrl, { method: 'GET', headers, signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        const list = Array.isArray(data.data) ? data.data : (Array.isArray(data.models) ? data.models : []);
-        list.forEach(m => {
-          const id = m.id || m.name || m.model;
-          if (id) models.add(id);
+    // 2. OpenAI-compatible /v1/models endpoints
+    let openaiUrl = rawUrl;
+    if (!openaiUrl.endsWith('/models')) {
+      openaiUrl = openaiUrl.endsWith('/v1') ? `${openaiUrl}/models` : `${openaiUrl}/v1/models`;
+    }
+    candidateEndpoints.push({ url: openaiUrl, type: 'openai' });
+    if (openaiUrl.includes('localhost')) {
+      candidateEndpoints.push({ url: openaiUrl.replace('localhost', '127.0.0.1'), type: 'openai' });
+    } else if (openaiUrl.includes('127.0.0.1')) {
+      candidateEndpoints.push({ url: openaiUrl.replace('127.0.0.1', 'localhost'), type: 'openai' });
+    }
+
+    let detectedSource = 'Ollama';
+
+    for (const item of candidateEndpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(item.url, {
+          method: 'GET',
+          headers,
+          signal: controller.signal
         });
-        if (models.size > 0) {
-          return { success: true, source: 'OpenAI-Compatible', models: Array.from(models) };
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (item.type === 'ollama' && Array.isArray(data.models)) {
+            data.models.forEach(m => {
+              const name = m.name || m.model;
+              if (name) modelsSet.add(name);
+            });
+            if (modelsSet.size > 0) {
+              detectedSource = 'Ollama';
+              break;
+            }
+          } else if (Array.isArray(data.data) || Array.isArray(data.models)) {
+            const list = Array.isArray(data.data) ? data.data : data.models;
+            list.forEach(m => {
+              const name = m.id || m.name || m.model;
+              if (name) modelsSet.add(name);
+            });
+            if (modelsSet.size > 0) {
+              detectedSource = 'OpenAI-Compatible';
+              break;
+            }
+          }
         }
+      } catch (e) {
+        // Try next candidate endpoint
       }
-    } catch (e) {
-      // Failed to reach
+    }
+
+    if (modelsSet.size > 0) {
+      const allModels = Array.from(modelsSet);
+      // Sort chat models first
+      const chatModels = allModels.filter(m => !m.includes('embed') && !m.includes('rerank'));
+      const otherModels = allModels.filter(m => m.includes('embed') || m.includes('rerank'));
+      const sortedModels = [...chatModels, ...otherModels];
+
+      return {
+        success: true,
+        source: detectedSource,
+        models: sortedModels,
+        primaryChatModel: chatModels[0] || sortedModels[0]
+      };
     }
 
     return {
       success: false,
-      error: '无法获取模型列表。如果使用本地 Ollama，请确认已在终端执行 `ollama serve`；或直接在下方手动输入模型名称。',
+      error: '无法连接到模型列表。如果使用本地 Ollama，请确认已在终端执行 `ollama serve`；或直接在下方手动输入模型名称。',
       models: []
     };
+  }
+
+  /**
+   * Test API connectivity & latency
+   */
+  async testConnection(customBaseUrl, customApiKey, customModel) {
+    const startTime = Date.now();
+    try {
+      let endpoint = (customBaseUrl || this.config.baseUrl || '').trim();
+      if (!endpoint.startsWith('http://') && !endpoint.startsWith('https://')) {
+        endpoint = `http://${endpoint}`;
+      }
+      if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
+      if (!endpoint.endsWith('/chat/completions')) {
+        endpoint = `${endpoint}/chat/completions`;
+      }
+
+      const apiKey = customApiKey !== undefined ? customApiKey : this.config.apiKey;
+      const model = customModel || this.config.model || 'llama3';
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: 'Hi' }],
+          max_tokens: 5
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      const latency = Date.now() - startTime;
+      if (res.ok) {
+        return { success: true, latency };
+      } else {
+        const text = await res.text();
+        return { success: false, error: `HTTP ${res.status}: ${text.slice(0, 100)}`, latency };
+      }
+    } catch (e) {
+      return { success: false, error: e.message, latency: Date.now() - startTime };
+    }
   }
 }
 

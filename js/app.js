@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deepseek: { baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
     openai: { baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
     gemini: { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/', model: 'gemini-2.0-flash' },
-    ollama: { baseUrl: 'http://localhost:11434/v1', model: 'llama3' },
+    ollama: { baseUrl: 'http://127.0.0.1:11434/v1', model: 'llama3' },
     custom: { baseUrl: 'https://api.openai.com/v1', model: 'custom-model' }
   };
 
@@ -158,12 +158,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await llmProvider.fetchModels(baseUrl, apiKey);
 
       if (result.success && result.models.length > 0) {
+        // If current model is empty or not in list, auto-fill with detected chat model
+        if (!inputAIModel.value || !result.models.includes(inputAIModel.value)) {
+          if (result.primaryChatModel) {
+            inputAIModel.value = result.primaryChatModel;
+          }
+        }
+
         if (selectAIModelList) {
           selectAIModelList.innerHTML = `<option value="">${i18n.t('selectModelPlaceholder')}</option>`;
           result.models.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m;
-            opt.textContent = `📦 ${m}`;
+            const isEmbed = m.includes('embed') || m.includes('rerank');
+            opt.textContent = `${isEmbed ? '🔍' : '💬'} ${m}`;
             if (m === inputAIModel.value) opt.selected = true;
             selectAIModelList.appendChild(opt);
           });
