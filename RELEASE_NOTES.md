@@ -1,7 +1,7 @@
 # 🚀 KuroBlob AI v0.2.0 Release Notes
 
-> **"Interactive Voice, Expression Vault & Motion Exporter"**  
-> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.2.0` 重大交互升级！新增萌系 TTS 语音合成、AI 表情专属收藏库、3 秒动态 WebM 动图表情包导出、OBS 演播绿幕抠像与疯狂拉扯物理眩晕反应！
+> **"Interactive Voice, Expression Vault, Motion Exporter & Multi-Layer Controls"**  
+> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.2.0` 重大交互升级！新增萌系 TTS 语音合成、AI 表情专属收藏库、3 秒动态 WebM 动图表情包导出、Light 模式高保真白底渲染、全图层独立自选开关（星环/微粒/配饰/腮红）、OBS 演播绿幕抠像与疯狂拉扯物理眩晕反应！
 
 ---
 
@@ -20,10 +20,16 @@
 - **高帧率 Canvas 流捕获**：利用 `HTMLCanvasElement.captureStream(60)` 与 `MediaRecorder`，高保真录制 3 秒 60 FPS 动态形变。
 - **一键自动下载**：支持在 AI 工坊与设计工坊一键导出 `.webm` 动图，轻松制作微信/飞书/Discord 动态表情包。
 
-### 4. 🟩 OBS 演播绿幕抠像模式 (OBS Chroma Green Screen)
+### 4. ☀️ Light 浅色模式高保真白底导出 (Light Mode White Background Export)
+- **告别黑底遮盖**：解决 WebM 透明编码默认黑底导致的黑人黑夜遮盖问题。浅色模式导出视频与 PNG 时自动渲染纯白底色（`#FFFFFF`），让纯黑果冻身体与多彩配饰边界分明、极具立体质感。
+
+### 5. 🎛️ AI 生成全图层独立自选控制面板 (Multi-Layer Layer Toggles)
+- **多图层自由拆装**：3D 轨道星环（Rings）、宇宙星尘微粒（Particles）、外置道具（Accessories）、粉嫩腮红（Cheeks）4 大图层支持独立勾选与即时上身，状态胶囊动态指示 `已装配` / `自定义图层` / `已精简`。
+
+### 6. 🟩 OBS 演播绿幕抠像模式 (OBS Chroma Green Screen)
 - **直播级色度键抠像**：舞台顶部一键切换 **“🟩 OBS 绿幕”** 模式，Canvas 背景瞬间切换为纯正色度绿 `#00FF00`，主播可直接在 OBS Studio 中添加窗口采集并过滤绿幕！
 
-### 5. 🫳 疯狂拉扯物理过载与眩晕互动 (Physical Pinch Overload & Dizzy Reaction)
+### 7. 🫳 疯狂拉扯物理过载与眩晕互动 (Physical Pinch Overload & Dizzy Reaction)
 - **力学过载反馈**：当用户以大幅度或高频率高速揉捏拉扯果冻躯体时，化身将触发力学过载保护，进入眩晕蚊香眼 (`DIZZY` 😵) 状态并弹出求饶对话气泡：*“哎呀别拉啦，果冻要被扯变形了~ 😵”*。
 
 ---

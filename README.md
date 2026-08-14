@@ -15,7 +15,7 @@
 <a name="english"></a>
 ## 🌟 English Overview
 
-**KuroBlob AI** (`黑呆萌`) is an interactive, web-native procedural avatar engine designed to bring dynamic 3D-like liquid mercury characters to life. Featuring a strict **Pure-Black (#0A0A0C) Brand Identity**, **16-Point Bezier Spring Physics Engine**, **Web VTuber (Camera Face Tracking & Mic Audio Lip-Sync)**, **Cute Anime Web Speech TTS Voice Synthesis**, **Expression Vault & LocalStorage Persistence**, **3-Second Animated 60 FPS WebM Exporter**, **OBS Chroma Green Screen Mode**, **BYOK Real LLM (Ollama & OpenAI-compatible) Streaming**, and the **AI Expression Creator Studio** powered by the `kuroblob-expression-creator` Agent Skill.
+**KuroBlob AI** (`黑呆萌`) is an interactive, web-native procedural avatar engine designed to bring dynamic 3D-like liquid mercury characters to life. Featuring a strict **Pure-Black (#0A0A0C) Brand Identity**, **16-Point Bezier Spring Physics Engine**, **Web VTuber (Camera Face Tracking & Mic Audio Lip-Sync)**, **Cute Anime Web Speech TTS Voice Synthesis**, **Expression Vault & LocalStorage Persistence**, **3-Second Animated 60 FPS WebM Exporter**, **Light Mode High-Contrast White Background Export**, **Multi-Layer Layer Toggles (Orbital Rings, Cosmic Particles, Soft Cheeks, Accessories)**, **OBS Chroma Green Screen Mode**, **BYOK Real LLM (Ollama & OpenAI-compatible) Streaming**, and the **AI Expression Creator Studio** powered by the `kuroblob-expression-creator` Agent Skill.
 
 ### ✨ Key Features (v0.2.0)
 
@@ -24,6 +24,8 @@
 - **🗣️ Cute Anime Web Speech TTS & Organic Lip-Sync**: High-pitched cute robot/anime voice synthesis synchronized with real-time typewriter dialogue and 3~6 Hz organic mouth opening movements.
 - **💾 Expression Vault & LocalStorage Persistence**: Save AI-generated and custom-designed expressions directly to your local pack; dynamically injects them into the manual testing grid with custom glowing badges.
 - **🎬 3-Second 60 FPS Animated WebM Exporter**: Record high-fps physics movement directly from Canvas and export dynamic sticker animations with one click.
+- **☀️ Light Mode High-Contrast White Background**: Automatically renders `#FFFFFF` pure white canvas backdrop during video and PNG export in light mode, eliminating transparent black background blending issues.
+- **🎛️ Multi-Layer Layer Toggles**: Independently toggle 3D Orbital Rings, Cosmic Dust Particles, Soft Cheeks, and External Accessories on/off with live badge indicators (`Equipped`, `Custom Layers`, `Simplified`).
 - **🟩 OBS Chroma Green Screen Mode**: One-click toggle switching canvas background to pure chroma green `#00FF00` for live streaming overlay in OBS Studio.
 - **🫳 Physical Pinch Overload & Dizzy Reaction**: Rapid, high-displacement stretching triggers mechanical overload protection with dizzy spiral eyes (`DIZZY` 😵) and speech bubbles.
 - **📹 60 FPS Web VTuber Mode (Zero Dependencies)**: Instant camera head roll & yaw tracking with optical centroid differential and 3D spherical head-eye parallax coupling.
@@ -86,7 +88,7 @@ avatar-dialogue-app/
 <a name="简体中文"></a>
 ## 🌟 简体中文 简介
 
-**KuroBlob AI (黑呆萌)** 是一款基于原生 HTML5 Canvas 开发的高保真程序化 3D 液态动态表情引擎与全模态交互伴侣。在 `v0.2.0` 中，全面集成了 **萌系 Web Speech TTS 语音合成**、**AI 表情专属收藏库**、**3 秒 60 FPS 动态 WebM 动图表情包导出**、**OBS 演播绿幕抠像** 以及 **捏脸过载眩晕物理互动**。
+**KuroBlob AI (黑呆萌)** 是一款基于原生 HTML5 Canvas 开发的高保真程序化 3D 液态动态表情引擎与全模态交互伴侣。在 `v0.2.0` 中，全面集成了 **萌系 Web Speech TTS 语音合成**、**AI 表情专属收藏库**、**3 秒 60 FPS 动态 WebM 动图表情包导出**、**Light 模式高保真白底导出**、**全图层独立自选开关（星环/微粒/配饰/腮红）**、**OBS 演播绿幕抠像** 以及 **捏脸过载眩晕物理互动**。
 
 ### ✨ 核心亮点 (v0.2.0)
 
@@ -95,6 +97,8 @@ avatar-dialogue-app/
 - **🗣️ 萌系 TTS 语音合成与对口型联动**: 基于 Web Speech API 定制动漫高音调声线（Pitch: 1.35），在对话吐字时以 3~6 Hz 节奏自然驱动果冻嘴形张合。
 - **💾 AI 表情专属收藏库 (Expression Vault)**: 生成表情一键点击“💾 收藏到表情包”，自动持久化至 LocalStorage 并注入底部测试网格，带有专属紫色光晕徽章。
 - **🎬 3 秒 60 FPS 动态表情包录制导出**: 捕获 Canvas 60 FPS 物理流，一键生成用于微信/飞书/Discord 的动态表情包。
+- **☀️ Light 浅色模式高保真白底导出**: 浅色模式导出视频与 PNG 时自动渲染纯白底色（`#FFFFFF`），彻底消除透明背景导致的黑底遮盖，完美凸显纯黑果冻质感。
+- **🎛️ AI 生成全图层独立自选控制面板**: 3D 轨道星环（Rings）、宇宙微粒（Particles）、外置道具（Accessories）、粉嫩腮红（Cheeks）4 大图层支持自由独立开关，状态胶囊动态指示。
 - **🟩 OBS 演播绿幕模式**: 一键将背景切换为纯色绿幕 `#00FF00`，主播可直接在 OBS Studio 中添加色度键抠像。
 - **🫳 疯狂拉扯物理过载与眩晕互动**: 高速大幅度揉捏果冻时触发过载反馈，进入蚊香眼 (`DIZZY` 😵) 状态并弹出求饶气泡。
 - **📹 60 FPS 零延迟 Web VTuber 面捕**: 原生 Chrome FaceDetector + 高敏光学质心差分算法，零延迟追踪头部转动与倾斜，配合 Web Audio RMS 麦克风对口型。
