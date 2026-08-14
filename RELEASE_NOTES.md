@@ -1,16 +1,16 @@
 # 🚀 KuroBlob AI v0.2.0 Release Notes
 
-> **"Interactive Voice, Expression Vault, Motion Exporter & Multi-Layer Controls"**  
-> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.2.0` 重大交互升级！新增萌系 TTS 语音合成、AI 表情专属收藏库、3 秒动态 WebM 动图表情包导出、Light 模式高保真白底渲染、全图层独立自选开关（星环/微粒/配饰/腮红）、OBS 演播绿幕抠像与疯狂拉扯物理眩晕反应！
+> **"Procedural Mascot Chatter, Expression Vault, Motion Exporter & Multi-Layer Controls"**  
+> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.2.0` 重大交互升级！新增萌系动森风程序化语聊音效（Mascot Vocal Synth Chatter）与嘴形同步、AI 表情专属收藏库、3 秒动态 WebM 动图表情包导出、Light 模式高保真白底渲染、全图层独立自选开关（星环/微粒/配饰/腮红）、OBS 演播绿幕抠像与疯狂拉扯物理眩晕反应！
 
 ---
 
 ## 🌟 What's New in v0.2.0 / 核心新特性
 
-### 1. 🔊 萌系 Web Speech TTS 语音合成与对口型联动 (Cute Anime Voice TTS)
-- **可爱动漫高音调合成**：基于浏览器原生 Web Speech API，定制萌系声线（Pitch: 1.35, Rate: 1.05），支持中英双语。
-- **有机嘴形同步 (Organic Speech Lip-Sync)**：在打字机对话吐字与朗读时，自动驱动果冻嘴形以 3~6 Hz 节奏有机开合，读毕自动闭合。
-- **一键静音/开启**：顶部导航栏专属 `🗣️ 语音已开 / 🔇 语音已关` 开关。
+### 1. 🎵 萌系程序化语聊音效与嘴形同步 (Procedural Mascot Chatter & Lip-Sync)
+- **动森风程序化语调合成**：告别生硬机械的传统 TTS，采用 100% 纯数学 Web Audio API 程序化合成器，将文字逐字映射至灵动悦耳的五声音阶（Pentatonic Synth Chirp）。
+- **自然有机嘴形联动**：在打字机对话吐字时，自动驱动果冻嘴形以 3~6 Hz 节奏自然开合（Organic Mouth Lip-Sync），吐字完毕自动闭合。
+- **全局一键静音/开启**：顶部导航栏专属 `🔊 音效已开 / 🔇 音效已关` 开关，支持 LocalStorage 记忆。
 
 ### 2. 💾 AI 表情专属收藏库与 LocalStorage 持久化 (Expression Vault)
 - **一键收藏入库**：在【🪄 AI 一键表情创造工坊】生成任意满意表情后，点击 **“💾 收藏到我的专属表情包”**。

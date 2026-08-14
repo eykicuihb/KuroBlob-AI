@@ -11,7 +11,6 @@ import { soundFx } from './sound-fx.js?v=2.3';
 import { llmProvider } from './llm-provider.js?v=2.3';
 import { FaceTracker } from './face-tracker.js?v=2.3';
 import { ExpressionGenerator } from './expression-generator.js?v=2.3';
-import { SpeechSynthesizer } from './speech-synthesizer.js?v=2.3';
 import { ExpressionVault } from './expression-vault.js?v=2.3';
 import { AnimationRecorder } from './animation-recorder.js?v=2.3';
 
@@ -101,38 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 🗣️ Cute Anime Web Speech TTS Synthesizer
-  const speechSynthesizer = new SpeechSynthesizer();
-  const ttsToggle = document.getElementById('ttsToggle');
-  const ttsIcon = document.getElementById('ttsIcon');
-  const ttsText = document.getElementById('ttsText');
 
-  speechSynthesizer.onLipSync = (mouthLevel) => {
-    avatar.setFaceTracking(mouthLevel > 0.05, { mouthOpen: mouthLevel });
-  };
-
-  const updateTTSUI = () => {
-    if (ttsIcon && ttsText) {
-      if (!speechSynthesizer.enabled) {
-        ttsIcon.textContent = '🔇';
-        ttsText.textContent = i18n.t('ttsOff');
-        ttsToggle?.classList.remove('active');
-      } else {
-        ttsIcon.textContent = '🗣️';
-        ttsText.textContent = i18n.t('ttsOn');
-        ttsToggle?.classList.add('active');
-      }
-    }
-  };
-  updateTTSUI();
-
-  if (ttsToggle) {
-    ttsToggle.addEventListener('click', () => {
-      speechSynthesizer.toggleTTS();
-      soundFx.pop(850, 0.06);
-      updateTTSUI();
-    });
-  }
 
   // 🟩 OBS Chroma Green Screen Mode Toggle
   const obsToggle = document.getElementById('obsToggle');
@@ -174,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nameEl) nameEl.textContent = 'DIZZY';
     const bubble = i18n.t('dizzyReaction');
     dialogueEngine.appendSystemMessage(bubble, 'DIZZY');
-    speechSynthesizer.speak(bubble);
   };
 
   // 🤖 AI Settings Modal & BYOK Configuration
@@ -471,12 +438,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderChatHistory(history);
     updateSentimentUI(analysis);
   });
-
-  dialogueEngine.onMessageComplete = (fullText) => {
-    if (speechSynthesizer.enabled) {
-      speechSynthesizer.speak(fullText);
-    }
-  };
 
   // Chat Form Submission
   if (chatForm) {

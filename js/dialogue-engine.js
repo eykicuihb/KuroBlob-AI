@@ -256,14 +256,21 @@ export class DialogueEngine {
 
     for (let i = 0; i < responseText.length; i++) {
       aiMessage.text += responseText[i];
-      if (i % 3 === 0) soundFx.typingBlip();
+      if (i % 2 === 0) {
+        soundFx.playMascotChatter(responseText[i], i);
+        this.avatar.setFaceTracking(true, { mouthOpen: (Math.sin(i * 0.85) * 0.35 + 0.35) });
+      }
       if (this.onMessageUpdate) this.onMessageUpdate(this.history, aiAnalysis);
       await this.sleep(25);
     }
 
+    // Close mouth upon typing completion
+    this.avatar.setFaceTracking(false, { mouthOpen: 0 });
+
     // 6. Response Stream Finished: Set Avatar Emotion strictly to match AI Response Text!
-    await this.sleep(200);
+    await this.sleep(150);
     this.avatar.setEmotion(finalAIEmotion);
+    soundFx.emotionReaction(finalAIEmotion);
 
     if (this.onMessageUpdate) this.onMessageUpdate(this.history, aiAnalysis);
     if (this.onMessageComplete) this.onMessageComplete(aiMessage.text, finalAIEmotion);

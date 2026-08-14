@@ -17,14 +17,15 @@ import puppeteer from 'puppeteer';
   await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
   console.log('✅ Page loaded successfully');
 
-  // 1. Test TTS Toggle
-  console.log('1. Testing Cute Anime TTS Voice toggle...');
-  const ttsTextBefore = await page.$eval('#ttsText', el => el.textContent);
-  console.log('   TTS Text Before:', ttsTextBefore);
-  await page.click('#ttsToggle');
-  const ttsTextAfter = await page.$eval('#ttsText', el => el.textContent);
-  console.log('   TTS Text After:', ttsTextAfter);
-  if (ttsTextBefore === ttsTextAfter) throw new Error('TTS toggle did not update UI');
+  // 1. Test Sound FX & Procedural Mascot Chatter Toggle
+  console.log('1. Testing Procedural Sound FX & Mascot Chatter toggle...');
+  const soundTextBefore = await page.$eval('#soundText', el => el.textContent);
+  console.log('   Sound Text Before:', soundTextBefore);
+  await page.click('#soundToggle');
+  const soundTextAfter = await page.$eval('#soundText', el => el.textContent);
+  console.log('   Sound Text After:', soundTextAfter);
+  if (soundTextBefore === soundTextAfter) throw new Error('Sound toggle did not update UI');
+  await page.click('#soundToggle'); // restore
 
   // 2. Test OBS Chroma Green Screen Toggle
   console.log('2. Testing OBS Chroma Green Screen Toggle...');
@@ -75,8 +76,8 @@ import puppeteer from 'puppeteer';
   console.log('5. Testing Bilingual Toggle...');
   await page.click('#langToggle');
   await new Promise(r => setTimeout(r, 200));
-  const ttsEnText = await page.$eval('#ttsText', el => el.textContent);
-  console.log('   English TTS text:', ttsEnText);
+  const soundEnText = await page.$eval('#soundText', el => el.textContent);
+  console.log('   English Sound text:', soundEnText);
 
   await browser.close();
   console.log('🎉 ALL v0.2.0 FEATURE ENHANCEMENT TESTS PASSED 100% PERFECTLY!');

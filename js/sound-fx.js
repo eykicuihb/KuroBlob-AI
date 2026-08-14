@@ -210,6 +210,39 @@ export class SoundFX {
   }
 
   /**
+   * 🗣️ Mascot Chatter Sound: Procedural Animal-Crossing / Mascot vocal synth chirps
+   * Replaces TTS with cute, organic procedural synth speech blips.
+   */
+  playMascotChatter(char = 'a', index = 0) {
+    if (this.muted) return;
+    this.ensureContext();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const duration = 0.045;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    const code = char.charCodeAt(0) || 65;
+    const basePitches = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
+    const pitch = basePitches[code % basePitches.length] * (1.0 + (index % 3) * 0.08);
+
+    osc.type = (code % 2 === 0) ? 'sine' : 'triangle';
+    osc.frequency.setValueAtTime(pitch, now);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 1.15, now + duration * 0.4);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 0.85, now + duration);
+
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(now);
+    osc.stop(now + duration);
+  }
+
+  /**
    * 🎼 Emotion musical signature
    */
   emotionReaction(emotion) {
