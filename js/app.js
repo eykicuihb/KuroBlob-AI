@@ -10,6 +10,7 @@ import { I18nManager } from './i18n.js';
 import { soundFx } from './sound-fx.js';
 import { llmProvider } from './llm-provider.js';
 import { FaceTracker } from './face-tracker.js';
+import { ExpressionGenerator } from './expression-generator.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const i18n = new I18nManager();
@@ -533,32 +534,122 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Navigation Mode Tab Switching
+  // Navigation Mode Tab Switching (3-Way: Chat / Studio / AI Creator)
   const tabChat = document.getElementById('tabChat');
   const tabStudio = document.getElementById('tabStudio');
+  const tabCreator = document.getElementById('tabCreator');
   const dialoguePanel = document.getElementById('dialoguePanel');
   const studioPanel = document.getElementById('studioPanel');
+  const creatorPanel = document.getElementById('creatorPanel');
 
-  if (tabChat) {
-    tabChat.addEventListener('click', () => {
-      soundFx.pop(750, 0.05);
-      tabChat.classList.add('active');
-      tabStudio?.classList.remove('active');
-      dialoguePanel?.classList.remove('hidden');
-      studioPanel?.classList.add('hidden');
+  const switchTab = (activeTab) => {
+    soundFx.pop(750, 0.05);
+    if (isTouring) stopTour();
+
+    tabChat?.classList.toggle('active', activeTab === 'chat');
+    tabStudio?.classList.toggle('active', activeTab === 'studio');
+    tabCreator?.classList.toggle('active', activeTab === 'creator');
+
+    dialoguePanel?.classList.toggle('hidden', activeTab !== 'chat');
+    studioPanel?.classList.toggle('hidden', activeTab !== 'studio');
+    creatorPanel?.classList.toggle('hidden', activeTab !== 'creator');
+
+    if (activeTab === 'chat') {
       avatar.setStudioMode(false);
+    } else {
+      avatar.setStudioMode(true);
+    }
+  };
+
+  if (tabChat) tabChat.addEventListener('click', () => switchTab('chat'));
+  if (tabStudio) tabStudio.addEventListener('click', () => switchTab('studio'));
+  if (tabCreator) tabCreator.addEventListener('click', () => switchTab('creator'));
+
+  // 🪄 AI Expression Creator Studio Engine (Powered by kuroblob-expression-creator Skill)
+  const expressionGenerator = new ExpressionGenerator(llmProvider);
+  const inputCreatorPrompt = document.getElementById('inputCreatorPrompt');
+  const btnGenerateExpression = document.getElementById('btnGenerateExpression');
+  const lblBtnGenerateText = document.getElementById('lblBtnGenerateText');
+  const lblCreatorStatus = document.getElementById('lblCreatorStatus');
+  const creatorResultBox = document.getElementById('creatorResultBox');
+  const txtGeneratedCode = document.getElementById('txtGeneratedCode');
+  const btnCopyGeneratedCode = document.getElementById('btnCopyGeneratedCode');
+  const btnApplyGeneratedExp = document.getElementById('btnApplyGeneratedExp');
+  const creatorChips = document.querySelectorAll('.btn-creator-chip');
+
+  let currentGeneratedExp = null;
+
+  const doGenerateExpression = async () => {
+    const prompt = inputCreatorPrompt?.value?.trim() || '赛博朋克黑客';
+    if (btnGenerateExpression) btnGenerateExpression.disabled = true;
+    if (lblBtnGenerateText) lblBtnGenerateText.textContent = i18n.t('btnGeneratingExp');
+    if (lblCreatorStatus) {
+      lblCreatorStatus.textContent = i18n.t('btnGeneratingExp');
+      lblCreatorStatus.style.color = 'var(--text-muted)';
+    }
+
+    try {
+      soundFx.pop(600, 0.08);
+      const exp = await expressionGenerator.generate(prompt);
+      currentGeneratedExp = exp;
+
+      // Apply dynamically to live Canvas
+      avatar.applyGeneratedExpression(exp);
+      soundFx.pop(1000, 0.1);
+
+      if (txtGeneratedCode) txtGeneratedCode.textContent = exp.code;
+      creatorResultBox?.classList.remove('hidden');
+
+      if (lblCreatorStatus) {
+        lblCreatorStatus.textContent = `${i18n.t('expGeneratedSuccess')} [${exp.nameZh} / ${exp.nameEn}]`;
+        lblCreatorStatus.style.color = '#34C759';
+      }
+    } catch (err) {
+      console.error('Expression generation failed:', err);
+      if (lblCreatorStatus) {
+        lblCreatorStatus.textContent = `❌ 生成失败: ${err.message}`;
+        lblCreatorStatus.style.color = '#FF3B30';
+      }
+    } finally {
+      if (btnGenerateExpression) btnGenerateExpression.disabled = false;
+      if (lblBtnGenerateText) lblBtnGenerateText.textContent = i18n.t('btnGenerateExp');
+    }
+  };
+
+  if (btnGenerateExpression) {
+    btnGenerateExpression.addEventListener('click', doGenerateExpression);
+  }
+
+  creatorChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      soundFx.pop(750, 0.05);
+      const prompt = chip.dataset.prompt;
+      if (prompt && inputCreatorPrompt) {
+        inputCreatorPrompt.value = prompt;
+        doGenerateExpression();
+      }
+    });
+  });
+
+  if (btnCopyGeneratedCode) {
+    btnCopyGeneratedCode.addEventListener('click', () => {
+      if (txtGeneratedCode) {
+        navigator.clipboard.writeText(txtGeneratedCode.textContent);
+        soundFx.pop(900, 0.06);
+        btnCopyGeneratedCode.textContent = '✅ 已复制!';
+        setTimeout(() => {
+          btnCopyGeneratedCode.textContent = i18n.t('btnCopyCode');
+        }, 1200);
+      }
     });
   }
 
-  if (tabStudio) {
-    tabStudio.addEventListener('click', () => {
-      if (isTouring) stopTour();
-      soundFx.pop(750, 0.05);
-      tabStudio.classList.add('active');
-      tabChat?.classList.remove('active');
-      studioPanel?.classList.remove('hidden');
-      dialoguePanel?.classList.add('hidden');
-      avatar.setStudioMode(true);
+  if (btnApplyGeneratedExp) {
+    btnApplyGeneratedExp.addEventListener('click', () => {
+      if (currentGeneratedExp) {
+        soundFx.pop(950, 0.08);
+        avatar.applyGeneratedExpression(currentGeneratedExp);
+      }
     });
   }
 

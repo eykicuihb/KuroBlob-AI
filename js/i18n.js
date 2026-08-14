@@ -12,6 +12,7 @@ export const translations = {
     exportCode: '⚡ 导出嵌入代码',
     tabChat: '💬 AI 智能对话表情模式',
     tabStudio: '🎨 Avatar 萌系自定义设计工坊',
+    tabCreator: '🪄 AI 一键表情创造工坊',
     stageLabel: 'Avatar 画布舞台',
     manualLabel: '手动测试 60+ 萌系程序生成表情',
     btnTourStart: '✨ 播放 60+ 表情自然形变动画',
@@ -22,6 +23,17 @@ export const translations = {
     systemMeta: '系统对话',
     inputPlaceholder: '输入对话内容，测试表情判别与交互...',
     btnSend: '发送',
+
+    // Creator Studio Section
+    creatorTitle: '🪄 AI 一键表情创造工坊',
+    creatorSubtitle: '搭载 kuroblob-expression-creator Agent Skill，输入任意自然语言创意，大模型即时推导 Canvas 2D 物理动效并实时上身！',
+    creatorPromptLabel: '🎨 创意 Prompt 描述',
+    btnGenerateExp: '⚡ 召唤大模型生成并实时上身',
+    btnGeneratingExp: '⏳ 大模型正在构建物理方程与 Canvas 代码...',
+    creatorCodeLabel: '📜 生成的 Canvas 2D 物理动效代码',
+    btnCopyCode: '📋 复制代码',
+    btnApplyExp: '✨ 重新上身预览',
+    expGeneratedSuccess: '✅ 成功生成并实时装配新表情！',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -136,6 +148,7 @@ export const translations = {
     exportCode: '⚡ Export Code',
     tabChat: '💬 AI Dialogue & Emotion Mode',
     tabStudio: '🎨 Avatar Creator Studio',
+    tabCreator: '🪄 AI Expression Creator Studio',
     stageLabel: 'Avatar Canvas Stage',
     manualLabel: 'Manual Test 60+ Procedural Expressions',
     btnTourStart: '✨ Auto Tour 60+ Expressions Morphing',
@@ -146,6 +159,17 @@ export const translations = {
     systemMeta: 'System Dialogue',
     inputPlaceholder: 'Type a message to test AI sentiment classifier...',
     btnSend: 'Send',
+
+    // Creator Studio Section
+    creatorTitle: '🪄 AI Expression Creator Studio',
+    creatorSubtitle: 'Powered by kuroblob-expression-creator Skill. Type any creative prompt and the AI will synthesize live Canvas 2D physics and mount it directly!',
+    creatorPromptLabel: '🎨 Creative Prompt Description',
+    btnGenerateExp: '⚡ Generate with LLM & Preview Live',
+    btnGeneratingExp: '⏳ LLM is synthesizing physics equations and Canvas code...',
+    creatorCodeLabel: '📜 Generated Canvas 2D Code & Parameters',
+    btnCopyCode: '📋 Copy Code',
+    btnApplyExp: '✨ Re-apply & Preview',
+    expGeneratedSuccess: '✅ Successfully generated and mounted new expression!',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',

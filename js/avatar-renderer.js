@@ -360,6 +360,37 @@ export class AvatarRenderer {
     this.customPresets[id] = { ...config };
   }
 
+  applyGeneratedExpression(exp) {
+    if (!exp) return;
+    this.studioMode = true;
+    if (exp.body) {
+      if (exp.body.colorStart) this.customConfig.bodyColor1 = exp.body.colorStart;
+      if (exp.body.colorEnd) this.customConfig.bodyColor2 = exp.body.colorEnd;
+      if (exp.body.glowColor) this.customConfig.glowColor = exp.body.glowColor;
+      if (exp.body.glowBlur) this.customConfig.glowBlur = exp.body.glowBlur;
+    }
+    if (exp.eyes) {
+      if (exp.eyes.style) this.customConfig.eyeStyle = exp.eyes.style;
+      if (exp.eyes.color) this.eyeColor = exp.eyes.color;
+      if (exp.eyes.width) this.customConfig.eyeWidth = exp.eyes.width;
+      if (exp.eyes.height) this.customConfig.eyeHeight = exp.eyes.height;
+      if (exp.eyes.spacing) this.customConfig.eyeSpacing = exp.eyes.spacing;
+      if (exp.eyes.tilt !== undefined) this.customConfig.eyeTilt = (exp.eyes.tilt * 180) / Math.PI;
+    }
+    if (exp.rings) {
+      this.customConfig.showRings = !!exp.rings.enabled;
+    }
+    if (exp.particles) {
+      this.customConfig.showParticles = !!exp.particles.enabled;
+    }
+    if (typeof exp.drawAccessory === 'function') {
+      this.customDrawAccessory = exp.drawAccessory;
+    } else {
+      this.customDrawAccessory = null;
+    }
+    this.triggerBlink();
+  }
+
   setEmotion(emotion) {
     if (this.customPresets && this.customPresets[emotion]) {
       this.setStudioMode(true, this.customPresets[emotion]);
@@ -1253,6 +1284,12 @@ export class AvatarRenderer {
       if (this.customConfig.auraAccessory === 'THUNDER') this.drawThunderLightning();
       if (this.customConfig.auraAccessory === 'SNOW') this.drawSnowfall();
       if (this.customConfig.showCheeks) this.drawCheeks();
+
+      if (this.customDrawAccessory && typeof this.customDrawAccessory === 'function') {
+        try {
+          this.customDrawAccessory(this.ctx, this.time);
+        } catch (e) {}
+      }
 
       if (this.customConfig.shape !== 'ROBOT') {
         this.drawEyes();
