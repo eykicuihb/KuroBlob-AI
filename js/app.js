@@ -4,13 +4,13 @@
  * procedural Web Audio SoundFX, webcam FaceTracker, and BYOK real LLM provider.
  */
 
-import { AvatarRenderer } from './avatar-renderer.js';
-import { DialogueEngine } from './dialogue-engine.js';
-import { I18nManager } from './i18n.js';
-import { soundFx } from './sound-fx.js';
-import { llmProvider } from './llm-provider.js';
-import { FaceTracker } from './face-tracker.js';
-import { ExpressionGenerator } from './expression-generator.js';
+import { AvatarRenderer } from './avatar-renderer.js?v=2.3';
+import { DialogueEngine } from './dialogue-engine.js?v=2.3';
+import { I18nManager } from './i18n.js?v=2.3';
+import { soundFx } from './sound-fx.js?v=2.3';
+import { llmProvider } from './llm-provider.js?v=2.3';
+import { FaceTracker } from './face-tracker.js?v=2.3';
+import { ExpressionGenerator } from './expression-generator.js?v=2.3';
 
 document.addEventListener('DOMContentLoaded', () => {
   const i18n = new I18nManager();
