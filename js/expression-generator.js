@@ -16,49 +16,49 @@ export class ExpressionGenerator {
     const p = prompt.toLowerCase().trim();
     let llmResult = null;
 
-    // 1. If Real LLM is active & configured, ask LLM to write the Canvas 2D drawAccessory code
+    // 1. If Real LLM is active & configured, ask LLM
     if (this.llmProvider && this.llmProvider.isConfigured()) {
       try {
-        const sysPrompt = `You are the KuroBlob Procedural Expression Creator Skill.
-KuroBlob is a living 2D/3D Canvas avatar centered at (0, 0) with a body radius of 80px:
-- Head top is at (0, -80)
-- Eyes are centered at (-36, -12) and (36, -12)
-- Body bottom is at (0, 80)
-- Left side (-80, 0), right side (80, 0)
-- 'ctx' is the HTML5 Canvas 2D rendering context.
-- 't' is time in seconds for animations (e.g. Math.sin(t * 3)).
+        const sysPrompt = `You are the KuroBlob Procedural Expression Creator Skill for a living 2D/3D Canvas avatar.
+Coordinates: Origin (0,0) is center. Body radius is 80px. Top of head is (0, -80). Eyes are at (-36, -12) and (36, -12).
+Write standard JavaScript Canvas2D drawing commands in 'drawAccessoryCode' using 'ctx' and time 't' (e.g. ctx.save(); ctx.fillStyle = '#...'; ctx.beginPath(); ctx.arc(...); ctx.fill(); ctx.restore();).
 
-Generate a creative, detailed procedural visual expression and WRITE THE FULL JAVASCRIPT CODE for 'drawAccessoryCode' to draw custom hats, masks, glasses, accessories, props, outfits, or animated elements on the canvas.
-
-Output ONLY a JSON object matching this schema:
+Return ONLY a JSON object:
 {
   "id": "UPPERCASE_ID",
   "nameZh": "中文名称",
   "nameEn": "English Name",
   "emoji": "emoji",
-  "category": "Character",
+  "props": ["list", "of", "visual", "elements"],
   "body": { "colorStart": "#HEX", "colorEnd": "#HEX", "glowColor": "rgba(...)", "glowBlur": 22 },
   "eyes": { "style": "PILL" | "CRESCENT" | "STERN" | "CIRCLE" | "STAR", "color": "#HEX", "width": 20, "height": 34, "spacing": 72, "tilt": 0.0 },
   "rings": { "enabled": true, "color1": "#HEX", "color2": "#HEX" },
   "particles": { "enabled": true, "type": "SPARKLE" | "FLAME" | "MATRIX_CODE", "count": 14, "color": "#HEX" },
-  "drawAccessoryCode": "ctx.save();\\n// Canvas2D drawing commands here...\\nctx.restore();"
+  "drawAccessoryCode": "ctx.save(); ctx.fillStyle = '#FF4081'; ctx.beginPath(); ctx.arc(0, -85, 12, 0, Math.PI*2); ctx.fill(); ctx.restore();"
 }`;
 
         const rawText = await this.llmProvider.generateJson(sysPrompt, `Create KuroBlob expression for: "${prompt}"`);
-        const match = rawText.match(/\{[\s\S]*\}/);
+        const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
         if (match) {
-          llmResult = JSON.parse(match[0]);
+          try {
+            llmResult = JSON.parse(match[0]);
+          } catch (e) {
+            try {
+              // Loose JSON parse fallback
+              llmResult = new Function(`return (${match[0]})`)();
+            } catch (e2) {}
+          }
         }
       } catch (e) {
-        console.warn('LLM expression synthesis fallback to dynamic procedural compiler:', e);
+        console.warn('LLM synthesis fallback to dynamic procedural vector compiler:', e);
       }
     }
 
-    // 2. If LLM provided valid drawAccessoryCode, compile and return it
-    if (llmResult && llmResult.drawAccessoryCode) {
+    // 2. If LLM provided real, valid Canvas2D code (containing ctx. operations), test and use it
+    if (llmResult && typeof llmResult.drawAccessoryCode === 'string' && llmResult.drawAccessoryCode.includes('ctx.')) {
       try {
         const drawFn = new Function('ctx', 't', llmResult.drawAccessoryCode);
-        // Test execution with mock context to ensure no fatal syntax error
         drawFn({
           save(){}, restore(){}, beginPath(){}, closePath(){},
           moveTo(){}, lineTo(){}, arc(){}, fill(){}, stroke(){},
@@ -80,11 +80,11 @@ Output ONLY a JSON object matching this schema:
           code: `// Generated via LLM by KuroBlob Expression Creator Skill\nexport const ${llmResult.id || 'CUSTOM'}_EXPRESSION = {\n  id: '${llmResult.id}',\n  nameZh: '${llmResult.nameZh}',\n  nameEn: '${llmResult.nameEn}',\n  emoji: '${llmResult.emoji}',\n  body: ${JSON.stringify(llmResult.body, null, 2)},\n  eyes: ${JSON.stringify(llmResult.eyes, null, 2)},\n  rings: ${JSON.stringify(llmResult.rings, null, 2)},\n  drawAccessory: function(ctx, t) {\n${llmResult.drawAccessoryCode}\n  }\n};`
         };
       } catch (err) {
-        console.warn('Failed to compile LLM drawAccessoryCode, falling back to dynamic synthesizer:', err);
+        console.warn('LLM drawAccessoryCode was not valid executable Canvas2D, using hybrid vector synthesis:', err);
       }
     }
 
-    // 3. Dynamic Procedural Vector Synthesizer (Generates dynamic Canvas2D code according to prompt keywords)
+    // 3. Dynamic Hybrid Procedural Vector Synthesizer (Generates unique Canvas2D code from prompt + LLM semantic output)
     return this.synthesizeDynamicProceduralExpression(p, llmResult);
   }
 
@@ -93,20 +93,32 @@ Output ONLY a JSON object matching this schema:
    */
   synthesizeDynamicProceduralExpression(p, llmResult = null) {
     const drawingSteps = [];
-    let id = 'CUSTOM_EXP';
-    let nameZh = '自定义创意表情';
-    let nameEn = 'Custom Expression';
-    let emoji = '✨';
-    let colorStart = '#4F46E5';
-    let colorEnd = '#06B6D4';
-    let glowColor = 'rgba(6, 182, 212, 0.4)';
-    let eyeStyle = 'PILL';
-    let eyeColor = '#FFFFFF';
-    let particleType = 'SPARKLE';
-    let particleColor = '#00F2FE';
+    
+    // Combine keywords from user prompt + any LLM extracted semantic tokens
+    let combinedText = p;
+    if (llmResult) {
+      if (typeof llmResult.nameZh === 'string') combinedText += ' ' + llmResult.nameZh;
+      if (typeof llmResult.nameEn === 'string') combinedText += ' ' + llmResult.nameEn;
+      if (Array.isArray(llmResult.props)) combinedText += ' ' + llmResult.props.join(' ');
+      if (Array.isArray(llmResult.accessories)) combinedText += ' ' + llmResult.accessories.join(' ');
+      if (typeof llmResult.attire === 'string') combinedText += ' ' + llmResult.attire;
+    }
+    const ct = combinedText.toLowerCase();
+
+    let id = llmResult?.id || 'CUSTOM_EXP';
+    let nameZh = llmResult?.nameZh || '自定义创意表情';
+    let nameEn = llmResult?.nameEn || 'Custom Expression';
+    let emoji = llmResult?.emoji || '✨';
+    let colorStart = llmResult?.body?.colorStart || '#4F46E5';
+    let colorEnd = llmResult?.body?.colorEnd || '#06B6D4';
+    let glowColor = llmResult?.body?.glowColor || 'rgba(6, 182, 212, 0.4)';
+    let eyeStyle = llmResult?.eyes?.style || 'PILL';
+    let eyeColor = llmResult?.eyes?.color || '#FFFFFF';
+    let particleType = llmResult?.particles?.type || 'SPARKLE';
+    let particleColor = llmResult?.particles?.color || '#00F2FE';
 
     // A. Headgear & Ear Accessories
-    if (/duck|鸭|小黄鸭/i.test(p)) {
+    if (/duck|鸭|小黄鸭/i.test(ct)) {
       emoji = '🐥';
       drawingSteps.push(`
   // --- Cute Rubber Duck on Head ---
@@ -131,11 +143,13 @@ Output ONLY a JSON object matching this schema:
   ctx.fill();`);
     }
 
-    if (/cat|neko|猫|喵/i.test(p)) {
+    if (/cat|neko|猫|喵/i.test(ct)) {
       emoji = '🐱';
-      colorStart = '#1E1B4B';
-      colorEnd = '#4338CA';
-      glowColor = 'rgba(99, 102, 241, 0.4)';
+      if (!llmResult) {
+        colorStart = '#1E1B4B';
+        colorEnd = '#4338CA';
+        glowColor = 'rgba(99, 102, 241, 0.4)';
+      }
       drawingSteps.push(`
   // --- Cute Neko Cat Ears ---
   ctx.fillStyle = '#4338CA';
@@ -172,11 +186,13 @@ Output ONLY a JSON object matching this schema:
   ctx.fill();`);
     }
 
-    if (/crown|皇冠|国王|queen|king|王冠|贵族/i.test(p)) {
+    if (/crown|皇冠|国王|queen|king|王冠|贵族/i.test(ct)) {
       emoji = '👑';
-      colorStart = '#7C2D12';
-      colorEnd = '#F59E0B';
-      glowColor = 'rgba(245, 158, 11, 0.45)';
+      if (!llmResult) {
+        colorStart = '#7C2D12';
+        colorEnd = '#F59E0B';
+        glowColor = 'rgba(245, 158, 11, 0.45)';
+      }
       drawingSteps.push(`
   // --- Royal Golden Crown ---
   ctx.fillStyle = '#FDE047';
@@ -199,12 +215,14 @@ Output ONLY a JSON object matching this schema:
   ctx.fill();`);
     }
 
-    if (/chef|厨师|拉面|煮|料理|cook/i.test(p)) {
+    if (/chef|厨师|拉面|煮|料理|cook/i.test(ct)) {
       emoji = '🍜';
-      colorStart = '#EA580C';
-      colorEnd = '#FBBF24';
-      glowColor = 'rgba(251, 191, 36, 0.45)';
-      eyeStyle = 'CRESCENT';
+      if (!llmResult) {
+        colorStart = '#EA580C';
+        colorEnd = '#FBBF24';
+        glowColor = 'rgba(251, 191, 36, 0.45)';
+        eyeStyle = 'CRESCENT';
+      }
       drawingSteps.push(`
   // --- Chef Hat ---
   ctx.fillStyle = '#FFFFFF';
@@ -224,12 +242,14 @@ Output ONLY a JSON object matching this schema:
   ctx.fill();`);
     }
 
-    if (/astronaut|宇航员|太空|space|helmet/i.test(p)) {
+    if (/astronaut|宇航员|太空|space|helmet/i.test(ct)) {
       emoji = '🚀';
-      colorStart = '#1E293B';
-      colorEnd = '#3B82F6';
-      glowColor = 'rgba(59, 130, 246, 0.4)';
-      eyeStyle = 'STAR';
+      if (!llmResult) {
+        colorStart = '#1E293B';
+        colorEnd = '#3B82F6';
+        glowColor = 'rgba(59, 130, 246, 0.4)';
+        eyeStyle = 'STAR';
+      }
       drawingSteps.push(`
   // --- Space Helmet Bubble ---
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
@@ -241,12 +261,14 @@ Output ONLY a JSON object matching this schema:
   ctx.stroke();`);
     }
 
-    if (/wizard|magic|巫师|魔法/i.test(p)) {
+    if (/wizard|magic|巫师|魔法/i.test(ct)) {
       emoji = '🧙';
-      colorStart = '#6D28D9';
-      colorEnd = '#EC4899';
-      glowColor = 'rgba(236, 72, 153, 0.45)';
-      eyeStyle = 'STAR';
+      if (!llmResult) {
+        colorStart = '#6D28D9';
+        colorEnd = '#EC4899';
+        glowColor = 'rgba(236, 72, 153, 0.45)';
+        eyeStyle = 'STAR';
+      }
       drawingSteps.push(`
   // --- Pointed Wizard Hat ---
   ctx.fillStyle = '#4C1D95';
@@ -265,14 +287,16 @@ Output ONLY a JSON object matching this schema:
   ctx.fill();`);
     }
 
-    if (/dragon|dinosaur|恐龙|龙|flame/i.test(p)) {
+    if (/dragon|dinosaur|恐龙|龙|flame/i.test(ct)) {
       emoji = '🐉';
-      colorStart = '#DC2626';
-      colorEnd = '#F97316';
-      glowColor = 'rgba(239, 68, 68, 0.5)';
-      eyeStyle = 'STERN';
-      particleType = 'FLAME';
-      particleColor = '#EF4444';
+      if (!llmResult) {
+        colorStart = '#DC2626';
+        colorEnd = '#F97316';
+        glowColor = 'rgba(239, 68, 68, 0.5)';
+        eyeStyle = 'STERN';
+        particleType = 'FLAME';
+        particleColor = '#EF4444';
+      }
       drawingSteps.push(`
   // --- Dragon Horns ---
   ctx.fillStyle = '#F59E0B';
@@ -295,7 +319,7 @@ Output ONLY a JSON object matching this schema:
     }
 
     // B. Eyewear & Face Props
-    if (/glasses|黑框|眼镜/i.test(p) || (/geek|programmer|程序员|码农/i.test(p) && !/hacker|黑客/i.test(p))) {
+    if (/glasses|黑框|眼镜/i.test(ct) || (/geek|programmer|程序员|码农/i.test(ct) && !/hacker|黑客/i.test(ct))) {
       drawingSteps.push(`
   // --- Geek Glasses ---
   ctx.strokeStyle = '#0F172A';
@@ -315,7 +339,7 @@ Output ONLY a JSON object matching this schema:
   ctx.stroke();`);
     }
 
-    if (/hacker|黑客|赛博|cyber|visor/i.test(p)) {
+    if (/hacker|黑客|赛博|cyber|visor/i.test(ct)) {
       emoji = '🕶️';
       eyeStyle = 'PILL';
       eyeColor = '#38BDF8';
@@ -341,12 +365,14 @@ Output ONLY a JSON object matching this schema:
   ctx.stroke();`);
     }
 
-    if (/bikini|比基尼|海边|沙滩|夏日|泳装|度假|beach|summer|ocean/i.test(p)) {
+    if (/bikini|比基尼|海边|沙滩|夏日|泳装|度假|beach|summer|ocean/i.test(ct)) {
       emoji = '👙';
-      colorStart = '#0284C7';
-      colorEnd = '#F43F5E';
-      glowColor = 'rgba(244, 63, 94, 0.45)';
-      particleColor = '#38BDF8';
+      if (!llmResult) {
+        colorStart = '#0284C7';
+        colorEnd = '#F43F5E';
+        glowColor = 'rgba(244, 63, 94, 0.45)';
+        particleColor = '#38BDF8';
+      }
       drawingSteps.push(`
   // --- Tropical Hibiscus Flower ---
   const flowerX = -52;
@@ -404,7 +430,7 @@ Output ONLY a JSON object matching this schema:
     }
 
     // C. Handheld / Props
-    if (/coffee|咖啡|mug/i.test(p)) {
+    if (/coffee|咖啡|mug/i.test(ct)) {
       emoji = '☕';
       drawingSteps.push(`
   // --- Steaming Coffee Mug ---
