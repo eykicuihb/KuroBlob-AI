@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target.value) {
         soundFx.pop(800, 0.05);
         if (inputAIModel) inputAIModel.value = e.target.value;
+        if (chkEnableLLM) chkEnableLLM.checked = true;
       }
     });
   }
@@ -231,12 +232,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnSaveAIModal) {
     btnSaveAIModal.addEventListener('click', () => {
+      const modelName = inputAIModel.value.trim();
+      const isOllama = selectAIProvider.value === 'ollama';
+      const shouldEnable = chkEnableLLM.checked || (isOllama && !!modelName);
+
       llmProvider.saveConfig({
-        enabled: chkEnableLLM.checked,
+        enabled: shouldEnable,
         provider: selectAIProvider.value,
         baseUrl: inputAIBaseUrl.value.trim(),
         apiKey: inputAIApiKey.value.trim(),
-        model: inputAIModel.value.trim()
+        model: modelName
       });
       soundFx.pop(1000, 0.08);
       btnSaveAIModal.textContent = i18n.t('aiSavedSuccess');
