@@ -82,11 +82,26 @@ Keep responses engaging, concise, and helpful.`;
       stream: true
     };
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
+    let response;
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body)
+      });
+    } catch (fetchErr) {
+      // If direct localhost fetch was blocked by browser CORS, retry through same-origin proxy
+      if (endpoint.includes('11434') || endpoint.includes('localhost') || endpoint.includes('127.0.0.1')) {
+        const proxyEndpoint = '/api/ollama/v1/chat/completions';
+        response = await fetch(proxyEndpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body)
+        });
+      } else {
+        throw fetchErr;
+      }
+    }
 
     if (!response.ok) {
       const errText = await response.text();
@@ -174,30 +189,22 @@ Keep responses engaging, concise, and helpful.`;
     const modelsSet = new Set();
     const candidateEndpoints = [];
 
-    // 1. Ollama native endpoints
+    // 1. Ollama native endpoints (Direct + Local Proxy Fallback)
     const baseWithoutV1 = rawUrl.replace(/\/v1\/?$/, '');
+    candidateEndpoints.push({ url: 'http://127.0.0.1:11434/api/tags', type: 'ollama' });
+    candidateEndpoints.push({ url: '/api/ollama/api/tags', type: 'ollama' });
+    candidateEndpoints.push({ url: 'http://localhost:11434/api/tags', type: 'ollama' });
     candidateEndpoints.push({ url: `${baseWithoutV1}/api/tags`, type: 'ollama' });
-    if (baseWithoutV1.includes('localhost')) {
-      candidateEndpoints.push({ url: baseWithoutV1.replace('localhost', '127.0.0.1') + '/api/tags', type: 'ollama' });
-    } else if (baseWithoutV1.includes('127.0.0.1')) {
-      candidateEndpoints.push({ url: baseWithoutV1.replace('127.0.0.1', 'localhost') + '/api/tags', type: 'ollama' });
-    } else {
-      // Fallback local endpoints if remote host failed
-      candidateEndpoints.push({ url: 'http://127.0.0.1:11434/api/tags', type: 'ollama' });
-      candidateEndpoints.push({ url: 'http://localhost:11434/api/tags', type: 'ollama' });
-    }
 
-    // 2. OpenAI-compatible /v1/models endpoints
+    // 2. OpenAI-compatible /v1/models endpoints (Direct + Local Proxy Fallback)
     let openaiUrl = rawUrl;
     if (!openaiUrl.endsWith('/models')) {
       openaiUrl = openaiUrl.endsWith('/v1') ? `${openaiUrl}/models` : `${openaiUrl}/v1/models`;
     }
     candidateEndpoints.push({ url: openaiUrl, type: 'openai' });
-    if (openaiUrl.includes('localhost')) {
-      candidateEndpoints.push({ url: openaiUrl.replace('localhost', '127.0.0.1'), type: 'openai' });
-    } else if (openaiUrl.includes('127.0.0.1')) {
-      candidateEndpoints.push({ url: openaiUrl.replace('127.0.0.1', 'localhost'), type: 'openai' });
-    }
+    candidateEndpoints.push({ url: '/api/ollama/v1/models', type: 'openai' });
+    candidateEndpoints.push({ url: 'http://127.0.0.1:11434/v1/models', type: 'openai' });
+    candidateEndpoints.push({ url: 'http://localhost:11434/v1/models', type: 'openai' });
 
     let detectedSource = 'Ollama';
 
