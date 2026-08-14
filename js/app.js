@@ -601,7 +601,11 @@ document.addEventListener('DOMContentLoaded', () => {
       creatorResultBox?.classList.remove('hidden');
 
       if (lblCreatorStatus) {
-        lblCreatorStatus.textContent = `${i18n.t('expGeneratedSuccess')} [${exp.nameZh} / ${exp.nameEn}]`;
+        const isLlmActive = llmProvider && llmProvider.isConfigured();
+        const hint = isLlmActive 
+          ? `(🤖 来源: ${llmProvider.config.provider} / ${llmProvider.config.model})`
+          : `(💡 提示: 已使用内置技能引擎生成；点击右上角【🤖 AI 设置】可接入实时大模型)`;
+        lblCreatorStatus.textContent = `${i18n.t('expGeneratedSuccess')} [${exp.nameZh} / ${exp.nameEn}] ${hint}`;
         lblCreatorStatus.style.color = '#34C759';
       }
     } catch (err) {

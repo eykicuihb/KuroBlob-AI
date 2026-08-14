@@ -50,6 +50,66 @@ Keep responses engaging, concise, and helpful.`;
   }
 
   /**
+   * Generate structured JSON output with custom system prompt (e.g. for Expression Creator Skill)
+   */
+  async generateJson(systemPrompt, userPrompt) {
+    let endpoint = this.config.baseUrl.trim();
+    if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
+    if (!endpoint.endsWith('/chat/completions')) {
+      endpoint = `${endpoint}/chat/completions`;
+    }
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ];
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (this.config.apiKey) {
+      headers['Authorization'] = `Bearer ${this.config.apiKey.trim()}`;
+    }
+
+    const body = {
+      model: this.config.model.trim() || 'llama3',
+      messages,
+      temperature: 0.3,
+      stream: false
+    };
+
+    let response;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchErr) {
+      // Try local proxy fallback
+      if (endpoint.includes('11434') || endpoint.includes('localhost') || endpoint.includes('127.0.0.1')) {
+        const proxyEndpoint = '/api/ollama/v1/chat/completions';
+        response = await fetch(proxyEndpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body)
+        });
+      } else {
+        throw fetchErr;
+      }
+    }
+
+    if (response && response.ok) {
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      return content;
+    }
+    throw new Error(`LLM request failed: ${response ? response.status : 'timeout'}`);
+  }
+
+  /**
    * Stream chat completion from OpenAI-compatible API
    */
   async streamChat(history, onChunk, onEmotion) {

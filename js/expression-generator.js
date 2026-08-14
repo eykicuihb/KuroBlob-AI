@@ -14,54 +14,159 @@ export class ExpressionGenerator {
    */
   async generate(prompt) {
     const p = prompt.toLowerCase().trim();
+    let llmResult = null;
 
-    // 1. If Real LLM is active & configured, we can ask the LLM
+    // 1. If Real LLM is active & configured, invoke LLM with Creator Skill Prompt
     if (this.llmProvider && this.llmProvider.isConfigured()) {
       try {
         const sysPrompt = `You are the KuroBlob Procedural Expression Creator Skill.
 Generate a valid JSON object matching this schema:
 {
-  "id": "UPPERCASE_NAME",
-  "nameZh": "中文名",
+  "id": "UPPERCASE_ID",
+  "nameZh": "中文名称",
   "nameEn": "English Name",
   "emoji": "emoji",
-  "category": "Sci-Fi",
-  "body": { "colorStart": "#hex", "colorEnd": "#hex", "glowColor": "rgba(...)", "glowBlur": 20 },
-  "eyes": { "style": "PILL", "color": "#hex", "width": 20, "height": 34, "spacing": 72, "tilt": 0.0 },
-  "rings": { "enabled": true, "color1": "#hex", "color2": "#hex" },
-  "particles": { "enabled": true, "type": "SPARKLE", "count": 12, "color": "#hex" },
-  "accessoryType": "COFFEE" | "HACKER" | "CHEF" | "ASTRONAUT" | "WIZARD" | "DRAGON" | "DJ" | "CAT",
-  "codeSnippet": "Canvas2D code string for drawAccessory(ctx, t)"
+  "category": "Character",
+  "body": { "colorStart": "#HEX", "colorEnd": "#HEX", "glowColor": "rgba(...)", "glowBlur": 22 },
+  "eyes": { "style": "PILL", "color": "#HEX", "width": 20, "height": 34, "spacing": 72, "tilt": 0.0 },
+  "rings": { "enabled": true, "color1": "#HEX", "color2": "#HEX" },
+  "particles": { "enabled": true, "type": "SPARKLE", "count": 14, "color": "#HEX" }
 }
-Return ONLY valid JSON.`;
+Output ONLY the raw JSON without markdown.`;
 
-        const res = await this.llmProvider.streamChat(
-          [{ sender: 'user', text: `Create KuroBlob expression for: "${prompt}"` }],
-          () => {},
-          () => {}
-        );
-
-        const match = res.match(/\{[\s\S]*\}/);
+        const rawText = await this.llmProvider.generateJson(sysPrompt, `Create KuroBlob expression for: "${prompt}"`);
+        const match = rawText.match(/\{[\s\S]*\}/);
         if (match) {
-          const parsed = JSON.parse(match[0]);
-          return this.enrichExpression(parsed, p);
+          llmResult = JSON.parse(match[0]);
         }
       } catch (e) {
-        console.warn('LLM expression synthesis failed, falling back to procedural synthesis:', e);
+        console.warn('LLM expression synthesis fallback to procedural engine:', e);
       }
     }
 
-    // 2. High Quality Procedural Synthesis Engine
-    return this.synthesizeProceduralExpression(p);
+    // 2. Synthesize with High-Fidelity Procedural Vector Shaders
+    return this.synthesizeProceduralExpression(p, llmResult);
   }
 
   /**
    * Procedural synthesis with dynamic vector rendering functions
    */
-  synthesizeProceduralExpression(p) {
+  synthesizeProceduralExpression(p, llmResult = null) {
     let exp;
 
-    if (/coffee|咖啡|程序员|geek|码农|写代码/i.test(p)) {
+    // A. Beach Bikini / Summer Vacation (海边比基尼 / 夏日沙滩)
+    if (/bikini|比基尼|海边|沙滩|夏日|泳装|度假|beach|summer|ocean/i.test(p)) {
+      exp = {
+        id: 'BEACH_BIKINI',
+        nameZh: '海边比基尼',
+        nameEn: 'Beach Bikini',
+        emoji: '👙',
+        category: 'Special',
+        body: {
+          colorStart: '#0284C7', // Ocean Blue
+          colorEnd: '#F43F5E',   // Tropical Sunset Pink
+          glowColor: 'rgba(244, 63, 94, 0.45)',
+          glowBlur: 24
+        },
+        eyes: {
+          style: 'PILL',
+          color: '#FFF1F2',
+          width: 20,
+          height: 32,
+          spacing: 70,
+          tilt: 0.08
+        },
+        rings: {
+          enabled: true,
+          color1: '#38BDF8',
+          color2: '#FB7185'
+        },
+        particles: {
+          enabled: true,
+          type: 'SPARKLE',
+          count: 16,
+          color: '#38BDF8'
+        },
+        drawAccessory: (ctx, t) => {
+          ctx.save();
+
+          // 1. Tropical Pink Hibiscus Flower on Head (Top Left)
+          const flowerX = -52;
+          const flowerY = -62 + Math.sin(t * 2) * 2;
+          ctx.fillStyle = '#F43F5E';
+          ctx.strokeStyle = '#BE123C';
+          ctx.lineWidth = 1.5;
+          for (let petal = 0; petal < 5; petal++) {
+            const angle = (petal / 5) * Math.PI * 2;
+            const px = flowerX + Math.cos(angle) * 14;
+            const py = flowerY + Math.sin(angle) * 14;
+            ctx.beginPath();
+            ctx.arc(px, py, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+          // Flower Gold Core
+          ctx.fillStyle = '#FDE047';
+          ctx.beginPath();
+          ctx.arc(flowerX, flowerY, 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 2. Chic Retro Summer Sunglasses across eyes (Y: -22)
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+          ctx.strokeStyle = '#F43F5E';
+          ctx.lineWidth = 3;
+          // Left Lens
+          ctx.beginPath();
+          ctx.roundRect(-52, -26, 34, 28, 8);
+          ctx.fill();
+          ctx.stroke();
+          // Right Lens
+          ctx.beginPath();
+          ctx.roundRect(18, -26, 34, 28, 8);
+          ctx.fill();
+          ctx.stroke();
+          // Frame Bridge
+          ctx.beginPath();
+          ctx.moveTo(-18, -12);
+          ctx.lineTo(18, -12);
+          ctx.stroke();
+
+          // Lens Glint Reflection
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-45, -20);
+          ctx.lineTo(-30, -6);
+          ctx.moveTo(25, -20);
+          ctx.lineTo(40, -6);
+          ctx.stroke();
+
+          // 3. Cute Tropical Beach Bikini Top with Ribbon Bow (Y: +38)
+          ctx.fillStyle = '#EC4899';
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          // Left Bikini Cup
+          ctx.beginPath();
+          ctx.arc(-22, 38, 16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          // Right Bikini Cup
+          ctx.beginPath();
+          ctx.arc(22, 38, 16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          // Center Ribbon Bow
+          ctx.fillStyle = '#FDE047';
+          ctx.beginPath();
+          ctx.arc(0, 38, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+      };
+    }
+    // B. Coffee Programmer (咖啡程序员)
+    else if (/coffee|咖啡|程序员|geek|码农|写代码|code/i.test(p)) {
       exp = {
         id: 'COFFEE_DEV',
         nameZh: '咖啡程序员',
@@ -74,27 +179,24 @@ Return ONLY valid JSON.`;
         particles: { enabled: true, type: 'SPARKLE', count: 12, color: '#818CF8' },
         drawAccessory: (ctx, t) => {
           ctx.save();
-          // 1. Geek Black-Rimmed Glasses
+          // Geek Glasses
           ctx.strokeStyle = '#0F172A';
           ctx.lineWidth = 4;
           ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-          // Left Lens
           ctx.beginPath();
           ctx.roundRect(-52, -26, 32, 28, 6);
           ctx.fill();
           ctx.stroke();
-          // Right Lens
           ctx.beginPath();
           ctx.roundRect(20, -26, 32, 28, 6);
           ctx.fill();
           ctx.stroke();
-          // Bridge
           ctx.beginPath();
           ctx.moveTo(-20, -12);
           ctx.lineTo(20, -12);
           ctx.stroke();
 
-          // 2. Steaming Coffee Mug on Bottom Right
+          // Steaming Coffee Mug
           const mugX = 48;
           const mugY = 32;
           ctx.fillStyle = '#FFFFFF';
@@ -104,11 +206,6 @@ Return ONLY valid JSON.`;
           ctx.roundRect(mugX, mugY, 26, 30, 4);
           ctx.fill();
           ctx.stroke();
-          // Coffee Logo
-          ctx.fillStyle = '#78350F';
-          ctx.beginPath();
-          ctx.arc(mugX + 13, mugY + 14, 5, 0, Math.PI * 2);
-          ctx.fill();
           // Handle
           ctx.strokeStyle = '#FFFFFF';
           ctx.lineWidth = 3;
@@ -116,7 +213,7 @@ Return ONLY valid JSON.`;
           ctx.arc(mugX + 28, mugY + 14, 7, -Math.PI / 2, Math.PI / 2);
           ctx.stroke();
 
-          // 3. Wavy Steam Particles
+          // Steam
           for (let s = 0; s < 3; s++) {
             const steamT = (t * 2 + s * 0.8) % 3;
             const steamY = mugY - 4 - steamT * 12;
@@ -131,7 +228,9 @@ Return ONLY valid JSON.`;
           ctx.restore();
         }
       };
-    } else if (/hacker|黑客|赛博|cyber/i.test(p)) {
+    }
+    // C. Cyber Hacker (赛博黑客)
+    else if (/hacker|黑客|赛博|cyber/i.test(p)) {
       exp = {
         id: 'CYBER_HACKER',
         nameZh: '赛博黑客',
@@ -163,7 +262,9 @@ Return ONLY valid JSON.`;
           ctx.restore();
         }
       };
-    } else if (/chef|厨师|拉面|吃|food/i.test(p)) {
+    }
+    // D. Ramen Chef (拉面大厨)
+    else if (/chef|厨师|拉面|food|cook/i.test(p)) {
       exp = {
         id: 'CHEF_RAMEN',
         nameZh: '拉面大厨',
@@ -176,7 +277,6 @@ Return ONLY valid JSON.`;
         particles: { enabled: true, type: 'SPARKLE', count: 10, color: '#FBBF24' },
         drawAccessory: (ctx, t) => {
           ctx.save();
-          // White Chef Hat
           ctx.fillStyle = '#FFFFFF';
           ctx.strokeStyle = '#E2E8F0';
           ctx.lineWidth = 3;
@@ -188,7 +288,6 @@ Return ONLY valid JSON.`;
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-          // Hat Brim Band
           ctx.fillStyle = '#DC2626';
           ctx.beginPath();
           ctx.roundRect(-42, -74, 84, 12, 3);
@@ -196,7 +295,9 @@ Return ONLY valid JSON.`;
           ctx.restore();
         }
       };
-    } else if (/astronaut|宇航员|太空|space/i.test(p)) {
+    }
+    // E. Astronaut (太空宇航员)
+    else if (/astronaut|宇航员|太空|space/i.test(p)) {
       exp = {
         id: 'ASTRONAUT',
         nameZh: '太空宇航员',
@@ -209,7 +310,6 @@ Return ONLY valid JSON.`;
         particles: { enabled: true, type: 'SPARKLE', count: 18, color: '#93C5FD' },
         drawAccessory: (ctx, t) => {
           ctx.save();
-          // Glass Space Helmet Bubble
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
           ctx.lineWidth = 4;
           ctx.fillStyle = 'rgba(147, 197, 253, 0.18)';
@@ -217,7 +317,6 @@ Return ONLY valid JSON.`;
           ctx.arc(0, 0, 94, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-          // Visor Light Reflection Arc
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
           ctx.lineWidth = 3;
           ctx.beginPath();
@@ -226,49 +325,14 @@ Return ONLY valid JSON.`;
           ctx.restore();
         }
       };
-    } else if (/dragon|恐龙|火|flame|dragon/i.test(p)) {
+    }
+    // F. General Creative Theme
+    else {
       exp = {
-        id: 'FIRE_DRAGON',
-        nameZh: '喷火小恐龙',
-        nameEn: 'Fire Dragon',
-        emoji: '🐉',
-        category: 'Animal',
-        body: { colorStart: '#DC2626', colorEnd: '#F97316', glowColor: 'rgba(239, 68, 68, 0.5)', glowBlur: 24 },
-        eyes: { style: 'STERN', color: '#FEF08A', width: 22, height: 38, spacing: 74, tilt: 0.25 },
-        rings: { enabled: true, color1: '#EF4444', color2: '#F59E0B' },
-        particles: { enabled: true, type: 'FLAME', count: 18, color: '#EF4444' },
-        drawAccessory: (ctx, t) => {
-          ctx.save();
-          // Golden Dragon Horns
-          ctx.fillStyle = '#F59E0B';
-          ctx.strokeStyle = '#B45309';
-          ctx.lineWidth = 2.5;
-          // Left Horn
-          ctx.beginPath();
-          ctx.moveTo(-45, -60);
-          ctx.quadraticCurveTo(-70, -100, -55, -115);
-          ctx.quadraticCurveTo(-40, -95, -30, -68);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          // Right Horn
-          ctx.beginPath();
-          ctx.moveTo(45, -60);
-          ctx.quadraticCurveTo(70, -100, 55, -115);
-          ctx.quadraticCurveTo(40, -95, 30, -68);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          ctx.restore();
-        }
-      };
-    } else {
-      // Default Creative Wizard
-      exp = {
-        id: 'MAGIC_WIZARD',
-        nameZh: '魔法小巫师',
-        nameEn: 'Magic Wizard',
-        emoji: '🧙',
+        id: 'CREATIVE_STAR',
+        nameZh: '创意之星',
+        nameEn: 'Creative Star',
+        emoji: '✨',
         category: 'Special',
         body: { colorStart: '#6D28D9', colorEnd: '#EC4899', glowColor: 'rgba(236, 72, 153, 0.45)', glowBlur: 22 },
         eyes: { style: 'STAR', color: '#FDF4FF', width: 22, height: 36, spacing: 72, tilt: 0 },
@@ -276,25 +340,33 @@ Return ONLY valid JSON.`;
         particles: { enabled: true, type: 'SPARKLE', count: 15, color: '#F472B6' },
         drawAccessory: (ctx, t) => {
           ctx.save();
-          // Pointed Wizard Hat
-          ctx.fillStyle = '#4C1D95';
-          ctx.strokeStyle = '#C084FC';
-          ctx.lineWidth = 3;
+          // Sparkling Golden Crown / Tiara
+          ctx.fillStyle = '#FDE047';
+          ctx.strokeStyle = '#CA8A04';
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
-          ctx.moveTo(-58, -62);
-          ctx.quadraticCurveTo(-20, -130, 25 + Math.sin(t * 2) * 5, -145);
-          ctx.quadraticCurveTo(15, -100, 58, -62);
+          ctx.moveTo(-36, -72);
+          ctx.lineTo(-44, -100);
+          ctx.lineTo(-18, -84);
+          ctx.lineTo(0, -108 + Math.sin(t * 3) * 3);
+          ctx.lineTo(18, -84);
+          ctx.lineTo(44, -100);
+          ctx.lineTo(36, -72);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-          // Gold Star on Hat Tip
-          ctx.fillStyle = '#FDE047';
-          ctx.beginPath();
-          ctx.arc(25 + Math.sin(t * 2) * 5, -145, 6, 0, Math.PI * 2);
-          ctx.fill();
           ctx.restore();
         }
       };
+    }
+
+    // Merge LLM styling if returned
+    if (llmResult) {
+      if (llmResult.nameZh) exp.nameZh = llmResult.nameZh;
+      if (llmResult.nameEn) exp.nameEn = llmResult.nameEn;
+      if (llmResult.emoji) exp.emoji = llmResult.emoji;
+      if (llmResult.body) exp.body = { ...exp.body, ...llmResult.body };
+      if (llmResult.eyes) exp.eyes = { ...exp.eyes, ...llmResult.eyes };
     }
 
     return this.enrichExpression(exp, p);
