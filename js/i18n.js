@@ -36,7 +36,12 @@ export const translations = {
     expGeneratedSuccess: '✅ 成功生成并实时装配新表情！',
     lblShowAccessory: '🎀 显示 AI 生成的外置配饰 (Accessory)',
     badgeAccessoryEquipped: '已装配',
-    badgeAccessoryHidden: '仅五官体态',
+    badgeAccessoryHidden: '已精简',
+    lblLayerOptions: '✨ 生成图层与特效开关 (可选有无)',
+    lblLayerAcc: '🎀 外置道具配饰',
+    lblLayerRings: '🪐 3D 轨道星环',
+    lblLayerParticles: '💫 宇宙星尘流光',
+    lblLayerCheeks: '🌸 萌系粉嫩腮红',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -182,7 +187,12 @@ export const translations = {
     expGeneratedSuccess: '✅ Successfully generated and mounted new expression!',
     lblShowAccessory: '🎀 Show AI Generated Accessories',
     badgeAccessoryEquipped: 'Equipped',
-    badgeAccessoryHidden: 'Hidden',
+    badgeAccessoryHidden: 'Simplified',
+    lblLayerOptions: '✨ Generated Layer & Effect Options',
+    lblLayerAcc: '🎀 Accessories',
+    lblLayerRings: '🪐 3D Orbital Rings',
+    lblLayerParticles: '💫 Cosmic Particles',
+    lblLayerCheeks: '🌸 Soft Pink Cheeks',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',

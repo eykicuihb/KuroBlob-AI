@@ -683,9 +683,19 @@ document.addEventListener('DOMContentLoaded', () => {
       soundFx.pop(1000, 0.1);
 
       if (txtGeneratedCode) txtGeneratedCode.textContent = exp.code;
-      if (chkCreatorShowAccessory) chkCreatorShowAccessory.checked = true;
-      avatar.setShowCustomAccessory(true);
-      updateAccessoryBadge(true);
+      
+      const hasAcc = typeof exp.drawAccessory === 'function' || !!exp.drawAccessoryCode;
+      const hasRings = !!(exp.rings && exp.rings.enabled);
+      const hasParticles = !!(exp.particles && exp.particles.enabled);
+      const hasCheeks = !!exp.showCheeks;
+
+      if (chkCreatorShowAccessory) chkCreatorShowAccessory.checked = hasAcc;
+      if (chkCreatorShowRings) chkCreatorShowRings.checked = hasRings;
+      if (chkCreatorShowParticles) chkCreatorShowParticles.checked = hasParticles;
+      if (chkCreatorShowCheeks) chkCreatorShowCheeks.checked = hasCheeks;
+
+      avatar.setShowCustomAccessory(hasAcc);
+      updateAccessoryBadge();
       creatorResultBox?.classList.remove('hidden');
 
       if (lblCreatorStatus) {
@@ -752,7 +762,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSaveCreatorToVault) {
     btnSaveCreatorToVault.addEventListener('click', () => {
       if (currentGeneratedExp) {
-        expressionVault.saveExpression(currentGeneratedExp);
+        const expToSave = {
+          ...currentGeneratedExp,
+          rings: { enabled: chkCreatorShowRings ? chkCreatorShowRings.checked : (currentGeneratedExp.rings?.enabled || false) },
+          particles: { enabled: chkCreatorShowParticles ? chkCreatorShowParticles.checked : (currentGeneratedExp.particles?.enabled || false) },
+          showCheeks: chkCreatorShowCheeks ? chkCreatorShowCheeks.checked : (currentGeneratedExp.showCheeks || false),
+          drawAccessoryCode: (chkCreatorShowAccessory && !chkCreatorShowAccessory.checked) ? null : currentGeneratedExp.drawAccessoryCode
+        };
+        expressionVault.saveExpression(expToSave);
         soundFx.pop(1100, 0.1);
         renderVaultGrid();
         btnSaveCreatorToVault.textContent = '✅ 已收藏入库!';
@@ -816,30 +833,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 🎀 Dynamic Accessory Visibility Option Toggle (Optional on/off)
+  // 🎀 Dynamic Multi-Layer & Effect Visibility Controls (Accessory, Rings, Particles, Cheeks)
   const chkCreatorShowAccessory = document.getElementById('chkCreatorShowAccessory');
+  const chkCreatorShowRings = document.getElementById('chkCreatorShowRings');
+  const chkCreatorShowParticles = document.getElementById('chkCreatorShowParticles');
+  const chkCreatorShowCheeks = document.getElementById('chkCreatorShowCheeks');
   const badgeAccessoryStatus = document.getElementById('badgeAccessoryStatus');
 
-  const updateAccessoryBadge = (show) => {
-    if (badgeAccessoryStatus) {
-      if (show) {
-        badgeAccessoryStatus.textContent = i18n.t('badgeAccessoryEquipped');
-        badgeAccessoryStatus.style.color = '#34C759';
-        badgeAccessoryStatus.style.background = 'rgba(52, 199, 89, 0.12)';
-      } else {
-        badgeAccessoryStatus.textContent = i18n.t('badgeAccessoryHidden');
-        badgeAccessoryStatus.style.color = '#8E8E93';
-        badgeAccessoryStatus.style.background = 'rgba(142, 142, 147, 0.12)';
-      }
+  const updateAccessoryBadge = () => {
+    if (!badgeAccessoryStatus) return;
+    const hasAcc = chkCreatorShowAccessory ? chkCreatorShowAccessory.checked : true;
+    const hasRings = chkCreatorShowRings ? chkCreatorShowRings.checked : false;
+    const hasParticles = chkCreatorShowParticles ? chkCreatorShowParticles.checked : false;
+
+    if (hasAcc && (hasRings || hasParticles)) {
+      badgeAccessoryStatus.textContent = i18n.t('badgeAccessoryEquipped');
+      badgeAccessoryStatus.style.color = '#34C759';
+      badgeAccessoryStatus.style.background = 'rgba(52, 199, 89, 0.12)';
+    } else if (!hasAcc && !hasRings && !hasParticles) {
+      badgeAccessoryStatus.textContent = i18n.t('badgeAccessoryHidden');
+      badgeAccessoryStatus.style.color = '#8E8E93';
+      badgeAccessoryStatus.style.background = 'rgba(142, 142, 147, 0.12)';
+    } else {
+      badgeAccessoryStatus.textContent = i18n.lang === 'zh-CN' ? '自定义图层' : 'Custom Layers';
+      badgeAccessoryStatus.style.color = '#A855F7';
+      badgeAccessoryStatus.style.background = 'rgba(168, 85, 247, 0.12)';
     }
   };
 
   if (chkCreatorShowAccessory) {
     chkCreatorShowAccessory.addEventListener('change', (e) => {
       soundFx.pop(750, 0.05);
-      const isChecked = e.target.checked;
-      avatar.setShowCustomAccessory(isChecked);
-      updateAccessoryBadge(isChecked);
+      avatar.setShowCustomAccessory(e.target.checked);
+      updateAccessoryBadge();
+    });
+  }
+
+  if (chkCreatorShowRings) {
+    chkCreatorShowRings.addEventListener('change', (e) => {
+      soundFx.pop(780, 0.05);
+      avatar.updateStudioConfig({ showRings: e.target.checked });
+      updateAccessoryBadge();
+    });
+  }
+
+  if (chkCreatorShowParticles) {
+    chkCreatorShowParticles.addEventListener('change', (e) => {
+      soundFx.pop(800, 0.05);
+      avatar.updateStudioConfig({ showParticles: e.target.checked });
+      updateAccessoryBadge();
+    });
+  }
+
+  if (chkCreatorShowCheeks) {
+    chkCreatorShowCheeks.addEventListener('change', (e) => {
+      soundFx.pop(820, 0.05);
+      avatar.updateStudioConfig({ showCheeks: e.target.checked });
+      updateAccessoryBadge();
     });
   }
 
@@ -848,9 +898,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentGeneratedExp) {
         soundFx.pop(950, 0.08);
         avatar.applyGeneratedExpression(currentGeneratedExp);
-        const isShow = chkCreatorShowAccessory ? chkCreatorShowAccessory.checked : true;
-        avatar.setShowCustomAccessory(isShow);
-        updateAccessoryBadge(isShow);
+        const isShowAcc = chkCreatorShowAccessory ? chkCreatorShowAccessory.checked : true;
+        const isShowRings = chkCreatorShowRings ? chkCreatorShowRings.checked : false;
+        const isShowParticles = chkCreatorShowParticles ? chkCreatorShowParticles.checked : false;
+        const isShowCheeks = chkCreatorShowCheeks ? chkCreatorShowCheeks.checked : false;
+
+        avatar.setShowCustomAccessory(isShowAcc);
+        avatar.updateStudioConfig({
+          showRings: isShowRings,
+          showParticles: isShowParticles,
+          showCheeks: isShowCheeks
+        });
+        updateAccessoryBadge();
       }
     });
   }

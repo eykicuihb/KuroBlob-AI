@@ -44,8 +44,8 @@ import puppeteer from 'puppeteer';
   const badgeAfter = await page.$eval('#badgeAccessoryStatus', el => el.textContent.trim());
   console.log('   Toggled Accessory Checkbox:', isCheckedAfter);
   console.log('   Toggled Accessory Badge:', badgeAfter);
-  if (isCheckedAfter || badgeAfter !== '仅五官体态') {
-    throw new Error('Accessory should be unchecked and show 仅五官体态');
+  if (isCheckedAfter || (badgeAfter !== '自定义图层' && badgeAfter !== '已精简')) {
+    throw new Error('Accessory should be unchecked and show 自定义图层 or 已精简');
   }
 
   // 4. Check Accessory Checkbox again
