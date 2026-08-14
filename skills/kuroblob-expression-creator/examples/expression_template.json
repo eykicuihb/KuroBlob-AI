@@ -1,0 +1,41 @@
+{
+  "id": "EXAMPLE_EMOTION",
+  "nameZh": "示例表情",
+  "nameEn": "Example Emotion",
+  "emoji": "✨",
+  "category": "Character",
+  "body": {
+    "colorStart": "#4F46E5",
+    "colorEnd": "#06B6D4",
+    "glowColor": "rgba(6, 182, 212, 0.4)",
+    "glowBlur": 20
+  },
+  "eyes": {
+    "style": "PILL",
+    "color": "#FFFFFF",
+    "width": 20,
+    "height": 34,
+    "spacing": 70,
+    "tilt": 0.0,
+    "rotation": 0.0
+  },
+  "rings": {
+    "enabled": true,
+    "speedX": 1.0,
+    "speedY": 2.0,
+    "color1": "#00F2FE",
+    "color2": "#4FACFE"
+  },
+  "particles": {
+    "enabled": true,
+    "type": "SPARKLE",
+    "count": 12,
+    "color": "#00F2FE"
+  },
+  "nlp": {
+    "keywordsZh": ["示例", "测试"],
+    "keywordsEn": ["example", "test"],
+    "responsesZh": ["这是新生成的示例表情！✨"],
+    "responsesEn": ["This is a freshly generated example emotion! ✨"]
+  }
+}
