@@ -683,6 +683,9 @@ document.addEventListener('DOMContentLoaded', () => {
       soundFx.pop(1000, 0.1);
 
       if (txtGeneratedCode) txtGeneratedCode.textContent = exp.code;
+      if (chkCreatorShowAccessory) chkCreatorShowAccessory.checked = true;
+      avatar.setShowCustomAccessory(true);
+      updateAccessoryBadge(true);
       creatorResultBox?.classList.remove('hidden');
 
       if (lblCreatorStatus) {
@@ -813,11 +816,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 🎀 Dynamic Accessory Visibility Option Toggle (Optional on/off)
+  const chkCreatorShowAccessory = document.getElementById('chkCreatorShowAccessory');
+  const badgeAccessoryStatus = document.getElementById('badgeAccessoryStatus');
+
+  const updateAccessoryBadge = (show) => {
+    if (badgeAccessoryStatus) {
+      if (show) {
+        badgeAccessoryStatus.textContent = i18n.t('badgeAccessoryEquipped');
+        badgeAccessoryStatus.style.color = '#34C759';
+        badgeAccessoryStatus.style.background = 'rgba(52, 199, 89, 0.12)';
+      } else {
+        badgeAccessoryStatus.textContent = i18n.t('badgeAccessoryHidden');
+        badgeAccessoryStatus.style.color = '#8E8E93';
+        badgeAccessoryStatus.style.background = 'rgba(142, 142, 147, 0.12)';
+      }
+    }
+  };
+
+  if (chkCreatorShowAccessory) {
+    chkCreatorShowAccessory.addEventListener('change', (e) => {
+      soundFx.pop(750, 0.05);
+      const isChecked = e.target.checked;
+      avatar.setShowCustomAccessory(isChecked);
+      updateAccessoryBadge(isChecked);
+    });
+  }
+
   if (btnApplyGeneratedExp) {
     btnApplyGeneratedExp.addEventListener('click', () => {
       if (currentGeneratedExp) {
         soundFx.pop(950, 0.08);
         avatar.applyGeneratedExpression(currentGeneratedExp);
+        const isShow = chkCreatorShowAccessory ? chkCreatorShowAccessory.checked : true;
+        avatar.setShowCustomAccessory(isShow);
+        updateAccessoryBadge(isShow);
       }
     });
   }

@@ -378,6 +378,16 @@
                 <button id="btnApplyGeneratedExp" class="btn-action primary" style="padding: 4px 8px; font-size: 0.75rem;" data-i18n="btnApplyExp">✨ 重新上身</button>
               </div>
             </div>
+
+            <!-- Dynamic Accessory Visibility Option / 可选有无外置配饰 -->
+            <div class="creator-accessory-toggle-bar" style="background: var(--bg-surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; color: var(--text-main); margin: 0;">
+                <input type="checkbox" id="chkCreatorShowAccessory" checked style="accent-color: #6366F1; width: 16px; height: 16px; cursor: pointer;">
+                <span data-i18n="lblShowAccessory">🎀 显示 AI 生成的外置配饰 (Accessory)</span>
+              </label>
+              <span id="badgeAccessoryStatus" style="font-size: 0.75rem; color: #34C759; background: rgba(52, 199, 89, 0.12); padding: 2px 8px; border-radius: 12px;" data-i18n="badgeAccessoryEquipped">已装配</span>
+            </div>
+
             <pre style="background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 200px; overflow: auto; font-size: 0.75rem; color: #38BDF8;"><code id="txtGeneratedCode"></code></pre>
           </div>
         </div>

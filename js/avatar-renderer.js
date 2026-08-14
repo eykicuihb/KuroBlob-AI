@@ -103,6 +103,9 @@ export class AvatarRenderer {
     // Mouse Gaze Tracking
     this.mouse = { x: 200, y: 200, isOver: false };
     
+    // AI Generated Accessory Visibility Toggle
+    this.showCustomAccessory = true;
+    
     // Time & Animation
     this.time = 0;
     this.animId = null;
@@ -373,6 +376,10 @@ export class AvatarRenderer {
 
     offCtx.drawImage(this.canvas, 0, 0);
     return offscreen.toDataURL('image/png');
+  }
+
+  setShowCustomAccessory(show) {
+    this.showCustomAccessory = !!show;
   }
 
   setStudioMode(enabled, config = {}) {
@@ -1339,7 +1346,7 @@ export class AvatarRenderer {
       if (this.customConfig.auraAccessory === 'SNOW') this.drawSnowfall();
       if (this.customConfig.showCheeks) this.drawCheeks();
 
-      if (this.customDrawAccessory && typeof this.customDrawAccessory === 'function') {
+      if (this.showCustomAccessory && this.customDrawAccessory && typeof this.customDrawAccessory === 'function') {
         try {
           this.customDrawAccessory(this.ctx, this.time);
         } catch (e) {}

@@ -34,6 +34,9 @@ export const translations = {
     btnCopyCode: '📋 复制代码',
     btnApplyExp: '✨ 重新上身预览',
     expGeneratedSuccess: '✅ 成功生成并实时装配新表情！',
+    lblShowAccessory: '🎀 显示 AI 生成的外置配饰 (Accessory)',
+    badgeAccessoryEquipped: '已装配',
+    badgeAccessoryHidden: '仅五官体态',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -177,6 +180,9 @@ export const translations = {
     btnCopyCode: '📋 Copy Code',
     btnApplyExp: '✨ Re-apply & Preview',
     expGeneratedSuccess: '✅ Successfully generated and mounted new expression!',
+    lblShowAccessory: '🎀 Show AI Generated Accessories',
+    badgeAccessoryEquipped: 'Equipped',
+    badgeAccessoryHidden: 'Hidden',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',
