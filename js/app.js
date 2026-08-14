@@ -11,6 +11,9 @@ import { soundFx } from './sound-fx.js?v=2.3';
 import { llmProvider } from './llm-provider.js?v=2.3';
 import { FaceTracker } from './face-tracker.js?v=2.3';
 import { ExpressionGenerator } from './expression-generator.js?v=2.3';
+import { SpeechSynthesizer } from './speech-synthesizer.js?v=2.3';
+import { ExpressionVault } from './expression-vault.js?v=2.3';
+import { AnimationRecorder } from './animation-recorder.js?v=2.3';
 
 document.addEventListener('DOMContentLoaded', () => {
   const i18n = new I18nManager();
@@ -97,6 +100,82 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // 🗣️ Cute Anime Web Speech TTS Synthesizer
+  const speechSynthesizer = new SpeechSynthesizer();
+  const ttsToggle = document.getElementById('ttsToggle');
+  const ttsIcon = document.getElementById('ttsIcon');
+  const ttsText = document.getElementById('ttsText');
+
+  speechSynthesizer.onLipSync = (mouthLevel) => {
+    avatar.setFaceTracking(mouthLevel > 0.05, { mouthOpen: mouthLevel });
+  };
+
+  const updateTTSUI = () => {
+    if (ttsIcon && ttsText) {
+      if (!speechSynthesizer.enabled) {
+        ttsIcon.textContent = '🔇';
+        ttsText.textContent = i18n.t('ttsOff');
+        ttsToggle?.classList.remove('active');
+      } else {
+        ttsIcon.textContent = '🗣️';
+        ttsText.textContent = i18n.t('ttsOn');
+        ttsToggle?.classList.add('active');
+      }
+    }
+  };
+  updateTTSUI();
+
+  if (ttsToggle) {
+    ttsToggle.addEventListener('click', () => {
+      speechSynthesizer.toggleTTS();
+      soundFx.pop(850, 0.06);
+      updateTTSUI();
+    });
+  }
+
+  // 🟩 OBS Chroma Green Screen Mode Toggle
+  const obsToggle = document.getElementById('obsToggle');
+  const obsIcon = document.getElementById('obsIcon');
+  const obsText = document.getElementById('obsText');
+  let isGreenScreen = false;
+
+  const updateOBSUI = () => {
+    if (obsIcon && obsText) {
+      if (isGreenScreen) {
+        obsIcon.textContent = '🟩';
+        obsText.textContent = i18n.t('obsOn');
+        obsToggle?.classList.add('active');
+      } else {
+        obsIcon.textContent = '🟩';
+        obsText.textContent = i18n.t('obsOff');
+        obsToggle?.classList.remove('active');
+      }
+    }
+  };
+  updateOBSUI();
+
+  if (obsToggle) {
+    obsToggle.addEventListener('click', () => {
+      isGreenScreen = !isGreenScreen;
+      avatar.setGreenScreen(isGreenScreen);
+      soundFx.pop(800, 0.05);
+      updateOBSUI();
+    });
+  }
+
+  // 🫳 Physical Pinch Overload Reaction
+  avatar.onPhysicalOverload = () => {
+    soundFx.boing(1.8);
+    avatar.setEmotion('DIZZY');
+    const emojiEl = document.getElementById('emotionEmoji');
+    const nameEl = document.getElementById('emotionName');
+    if (emojiEl) emojiEl.textContent = '😵';
+    if (nameEl) nameEl.textContent = 'DIZZY';
+    const bubble = i18n.t('dizzyReaction');
+    dialogueEngine.appendSystemMessage(bubble, 'DIZZY');
+    speechSynthesizer.speak(bubble);
+  };
 
   // 🤖 AI Settings Modal & BYOK Configuration
   const aiSettingsBtn = document.getElementById('aiSettingsBtn');
@@ -393,6 +472,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSentimentUI(analysis);
   });
 
+  dialogueEngine.onMessageComplete = (fullText) => {
+    if (speechSynthesizer.enabled) {
+      speechSynthesizer.speak(fullText);
+    }
+  };
+
   // Chat Form Submission
   if (chatForm) {
     chatForm.addEventListener('submit', (e) => {
@@ -634,6 +719,77 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // 💾 Expression Vault & Animation Recorder Setup
+  const expressionVault = new ExpressionVault();
+  const animationRecorder = new AnimationRecorder();
+  const customEmotionsContainer = document.getElementById('customEmotionsContainer');
+  const btnSaveCreatorToVault = document.getElementById('btnSaveCreatorToVault');
+  const btnExportCreatorVideo = document.getElementById('btnExportCreatorVideo');
+  const btnStudioExportVideo = document.getElementById('btnStudioExportVideo');
+
+  const renderVaultGrid = () => {
+    expressionVault.renderToGrid(
+      customEmotionsContainer,
+      (selectedExp) => {
+        soundFx.pop(850, 0.06);
+        avatar.applyGeneratedExpression(selectedExp);
+        const emojiEl = document.getElementById('emotionEmoji');
+        const nameEl = document.getElementById('emotionName');
+        if (emojiEl) emojiEl.textContent = selectedExp.emoji || '🎨';
+        if (nameEl) nameEl.textContent = selectedExp.nameZh || selectedExp.id;
+      },
+      () => {
+        soundFx.pop(400, 0.05);
+      }
+    );
+  };
+  renderVaultGrid();
+
+  if (btnSaveCreatorToVault) {
+    btnSaveCreatorToVault.addEventListener('click', () => {
+      if (currentGeneratedExp) {
+        expressionVault.saveExpression(currentGeneratedExp);
+        soundFx.pop(1100, 0.1);
+        renderVaultGrid();
+        btnSaveCreatorToVault.textContent = '✅ 已收藏入库!';
+        setTimeout(() => {
+          btnSaveCreatorToVault.textContent = i18n.t('btnSaveToVault');
+        }, 1500);
+      }
+    });
+  }
+
+  const handleVideoExport = async (btn) => {
+    if (animationRecorder.isRecording) return;
+    soundFx.pop(700, 0.08);
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ 正在录制 60 FPS 动图...';
+    try {
+      await animationRecorder.record(canvas, 3, (progress) => {
+        btn.textContent = `⏳ 录制中 ${Math.round(progress * 100)}%`;
+      });
+      soundFx.pop(1200, 0.12);
+      btn.textContent = '✅ 导出成功!';
+    } catch (err) {
+      console.error('Video recording failed:', err);
+      btn.textContent = '❌ 导出失败';
+    } finally {
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = origText;
+      }, 1800);
+    }
+  };
+
+  if (btnExportCreatorVideo) {
+    btnExportCreatorVideo.addEventListener('click', () => handleVideoExport(btnExportCreatorVideo));
+  }
+
+  if (btnStudioExportVideo) {
+    btnStudioExportVideo.addEventListener('click', () => handleVideoExport(btnStudioExportVideo));
+  }
 
   if (btnCopyGeneratedCode) {
     btnCopyGeneratedCode.addEventListener('click', () => {

@@ -276,6 +276,20 @@ export class AvatarRenderer {
           }
           const intensity = Math.min(2.0, Math.max(0.6, Math.abs(maxOffset) / 35));
           soundFx.boing(intensity);
+
+          // Physical Pinch Overload Tracking
+          const now = Date.now();
+          if (!this.stretchHistory) this.stretchHistory = [];
+          this.stretchHistory.push({ time: now, dist: moved });
+          this.stretchHistory = this.stretchHistory.filter(h => now - h.time < 3000);
+          const totalRecent = this.stretchHistory.reduce((sum, h) => sum + h.dist, 0);
+
+          if (moved > 160 || totalRecent > 350) {
+            this.stretchHistory = [];
+            if (this.onPhysicalOverload) {
+              this.onPhysicalOverload();
+            }
+          }
         }
       } else if (this.dragTarget === 'EYES') {
         soundFx.pop(750, 0.08);
@@ -329,6 +343,10 @@ export class AvatarRenderer {
     for (let i = 0; i < this.numPoints; i++) {
       this.velocities[i] += (Math.random() - 0.5) * amount;
     }
+  }
+
+  setGreenScreen(active) {
+    this.greenScreen = !!active;
   }
 
   setStudioMode(enabled, config = {}) {
@@ -1152,10 +1170,17 @@ export class AvatarRenderer {
   }
 
   draw() {
-    this.ctx.clearRect(0, 0, this.width, this.height);
+    if (this.greenScreen) {
+      this.ctx.fillStyle = '#00FF00';
+      this.ctx.fillRect(0, 0, this.width, this.height);
+    } else {
+      this.ctx.clearRect(0, 0, this.width, this.height);
+    }
 
     // Draw Background Aura / Glow per emotion
-    this.drawEmotionAura();
+    if (!this.greenScreen) {
+      this.drawEmotionAura();
+    }
 
     // Draw Z-Sorted 3D Orbital Rings - BACK ARCS (z < 0)
     if (this.ringVisibility > 0.01) {

@@ -60,11 +60,18 @@ export const translations = {
     
     placeholderCustomName: '输入自定义表情名称 (如: 傲娇酷黑猫)...',
     btnSaveCustom: '💾 保存至表情包',
+    btnSaveToVault: '💾 收藏到我的专属表情包',
     btnExportPNG: '📸 导出高清 PNG',
+    btnExportVideo: '🎬 导出 3 秒动态表情包',
     btnCopyJSON: '📋 复制配置 JSON',
     
     savedSuccess: '✅ 已保存到表情包！',
     copiedSuccess: '✅ 已复制配置 JSON！',
+    ttsOn: '语音朗读已开',
+    ttsOff: '语音朗读已关',
+    obsOn: 'OBS 绿幕已开',
+    obsOff: 'OBS 绿幕模式',
+    dizzyReaction: '哎呀别扯啦，果冻要被拉变形了~ 😵',
 
     // Select Options - Head Accessories
     optHeadNone: '无',
@@ -196,11 +203,18 @@ export const translations = {
     
     placeholderCustomName: 'Enter custom emotion name (e.g. Cool Black Cat)...',
     btnSaveCustom: '💾 Save to Pack',
+    btnSaveToVault: '💾 Save to My Custom Pack',
     btnExportPNG: '📸 Export High-Res PNG',
+    btnExportVideo: '🎬 Export 3s Animated WebM',
     btnCopyJSON: '📋 Copy Config JSON',
     
     savedSuccess: '✅ Saved to Pack!',
     copiedSuccess: '✅ Config JSON Copied!',
+    ttsOn: 'TTS Voice On',
+    ttsOff: 'TTS Voice Off',
+    obsOn: 'OBS Green Screen On',
+    obsOff: 'OBS Green Screen',
+    dizzyReaction: 'Ouch, stop pulling! My jelly body is dizzy~ 😵',
 
     // Select Options - Head Accessories
     optHeadNone: 'None',

@@ -1,6 +1,6 @@
 {
   "name": "kuroblob-ai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Living 3D Procedural Jelly Avatar & Multimodal AI Companion Engine",
   "type": "module",
   "main": "server.js",

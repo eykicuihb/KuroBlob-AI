@@ -1,3 +1,33 @@
+# 🚀 KuroBlob AI v0.2.0 Release Notes
+
+> **"Interactive Voice, Expression Vault & Motion Exporter"**  
+> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.2.0` 重大交互升级！新增萌系 TTS 语音合成、AI 表情专属收藏库、3 秒动态 WebM 动图表情包导出、OBS 演播绿幕抠像与疯狂拉扯物理眩晕反应！
+
+---
+
+## 🌟 What's New in v0.2.0 / 核心新特性
+
+### 1. 🔊 萌系 Web Speech TTS 语音合成与对口型联动 (Cute Anime Voice TTS)
+- **可爱动漫高音调合成**：基于浏览器原生 Web Speech API，定制萌系声线（Pitch: 1.35, Rate: 1.05），支持中英双语。
+- **有机嘴形同步 (Organic Speech Lip-Sync)**：在打字机对话吐字与朗读时，自动驱动果冻嘴形以 3~6 Hz 节奏有机开合，读毕自动闭合。
+- **一键静音/开启**：顶部导航栏专属 `🗣️ 语音已开 / 🔇 语音已关` 开关。
+
+### 2. 💾 AI 表情专属收藏库与 LocalStorage 持久化 (Expression Vault)
+- **一键收藏入库**：在【🪄 AI 一键表情创造工坊】生成任意满意表情后，点击 **“💾 收藏到我的专属表情包”**。
+- **动态测试网格自动注入**：收藏的表情包自动沉淀至舞台下方专属收藏区，带炫酷紫色发光边框，随时一键点击调用形变与删除管理。
+
+### 3. 🎬 3 秒循环 60 FPS 动态表情包录制导出 (Animated WebM Exporter)
+- **高帧率 Canvas 流捕获**：利用 `HTMLCanvasElement.captureStream(60)` 与 `MediaRecorder`，高保真录制 3 秒 60 FPS 动态形变。
+- **一键自动下载**：支持在 AI 工坊与设计工坊一键导出 `.webm` 动图，轻松制作微信/飞书/Discord 动态表情包。
+
+### 4. 🟩 OBS 演播绿幕抠像模式 (OBS Chroma Green Screen)
+- **直播级色度键抠像**：舞台顶部一键切换 **“🟩 OBS 绿幕”** 模式，Canvas 背景瞬间切换为纯正色度绿 `#00FF00`，主播可直接在 OBS Studio 中添加窗口采集并过滤绿幕！
+
+### 5. 🫳 疯狂拉扯物理过载与眩晕互动 (Physical Pinch Overload & Dizzy Reaction)
+- **力学过载反馈**：当用户以大幅度或高频率高速揉捏拉扯果冻躯体时，化身将触发力学过载保护，进入眩晕蚊香眼 (`DIZZY` 😵) 状态并弹出求饶对话气泡：*“哎呀别拉啦，果冻要被扯变形了~ 😵”*。
+
+---
+
 # 🚀 KuroBlob AI v0.1.0 Release Notes
 
 > **"A Living 3D Procedural Jelly Avatar & Multimodal AI Companion Engine"**  
@@ -29,24 +59,12 @@
 - **双轨混合矢量生成架构**：
   - 支持大模型现场编写标准 Canvas 2D 绘图代码并动态编译。
   - 支持小模型语义特征提取与本地组合式矢量编译器（Composable Vector Synthesizer）。
-- **实时上身与代码导出**：输入任意自然语言（如*“海边比基尼秀”*、*“戴小黄鸭喝咖啡的可爱小猫”*），左侧舞台实时 60 FPS 动态换装，支持一键复制代码与导出标准 JS 模块。
+- **实时上身与代码导出**：输入任意自然语言，左侧舞台实时 60 FPS 动态换装，支持一键复制代码与导出标准 JS 模块。
 
 ### 5. 🎨 萌系自定义设计工坊与纯净双语 (Studio & i18n)
 - **可视化参数微调**：弹性系数、眼宽、眼高、倾角、球面坐标实时滑块控制。
 - **纯净中英文切换**：全局 i18n 引擎，零中英混杂。
 - **Web Audio 程序化音效**：纯数学合成 Pop 气泡音、打字机嘀嗒音。
-
----
-
-## 📦 What's Changed / 详细更新日志
-
-- **feat(engine)**: 实现了 16 点贝塞尔果冻弹簧物理引擎与 60+ 款程序生成表情
-- **feat(vtuber)**: 引入基于 FaceDetector + 光学质心的 60 FPS 摄像头面捕与 3D 头眼联动
-- **feat(llm)**: 接入 Ollama 本地模型与 OpenAI 兼容 API，支持流式对话与情感标签驱动
-- **feat(skill)**: 正式交付 `kuroblob-expression-creator` Agent Skill 及自动化 Mock Canvas 验证工具
-- **feat(creator-ui)**: 上线前端【🪄 AI 一键表情创造工坊】，支持自然语言即时生成 2D 矢量表情并实时上身
-- **fix(cors)**: 提供零跨域 Node 静态开发服务器与 Ollama 逆向代理
-- **fix(cache)**: 注入 `?v=2.3` 强制版本穿透，防止浏览器 ES Module 强缓存
 
 ---
 

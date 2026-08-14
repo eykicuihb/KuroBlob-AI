@@ -23,8 +23,14 @@
         <button id="soundToggle" class="btn-icon" title="Toggle Sound FX / 音效开关">
           <span id="soundIcon">🔊</span> <span id="soundText" data-i18n="soundOn">音效已开</span>
         </button>
+        <button id="ttsToggle" class="btn-icon" title="Toggle Cute Anime TTS Speech / 萌系语音朗读开关">
+          <span id="ttsIcon">🗣️</span> <span id="ttsText" data-i18n="ttsOn">语音已开</span>
+        </button>
         <button id="vtuberToggle" class="btn-icon" title="Toggle Web VTuber Mode / 摄像头面捕模式">
           <span id="vtuberIcon">📹</span> <span id="vtuberText" data-i18n="vtuberMode">VTuber 面捕</span>
+        </button>
+        <button id="obsToggle" class="btn-icon" title="Toggle OBS Green Screen Mode / 绿幕演播模式">
+          <span id="obsIcon">🟩</span> <span id="obsText" data-i18n="obsOff">OBS 绿幕</span>
         </button>
         <button id="aiSettingsBtn" class="btn-icon" title="Configure Real LLM (BYOK) / AI 大模型设置">
           <span>🤖</span> <span data-i18n="aiSettings">AI 设置</span>
@@ -132,6 +138,14 @@
             <button class="btn-emotion" data-emotion="PUFF">😤 Pout</button>
             <button class="btn-emotion" data-emotion="PIRATE">🏴‍☠️ Pirate</button>
             <button class="btn-emotion" data-emotion="SUPERHERO">🦸 Hero</button>
+          </div>
+
+          <!-- My Vault Custom Pack Section -->
+          <div id="customEmotionsSection" style="margin-top: 14px; border-top: 1px dashed var(--bg-card-border); padding-top: 10px;">
+            <div class="controls-header" style="margin-bottom: 8px;">
+              <span class="control-label" style="color: #A855F7; font-weight: 600;">⭐ 我的专属表情包收藏库 (AI & 自定义)</span>
+            </div>
+            <div id="customEmotionsContainer" class="emotion-buttons"></div>
           </div>
         </div>
       </section>
@@ -316,8 +330,9 @@
               <input type="text" id="inputCustomName" placeholder="输入自定义表情名称 (如: 傲娇酷黑猫)..." data-i18n-ph="placeholderCustomName" class="input-custom-name">
               <button id="btnSaveCustomEmotion" class="btn-action primary" data-i18n="btnSaveCustom">💾 保存至表情包</button>
             </div>
-            <div class="actions-group" style="margin-top: 10px;">
+            <div class="actions-group" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
               <button id="btnStudioExportPNG" class="btn-action secondary" data-i18n="btnExportPNG">📸 导出高清 PNG</button>
+              <button id="btnStudioExportVideo" class="btn-action secondary" data-i18n="btnExportVideo">🎬 导出 3 秒动态表情包</button>
               <button id="btnStudioCopyJSON" class="btn-action secondary" data-i18n="btnCopyJSON">📋 复制配置 JSON</button>
             </div>
           </div>
@@ -354,9 +369,11 @@
           </div>
 
           <div id="creatorResultBox" class="studio-group hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
               <label class="control-label" style="margin: 0;" data-i18n="creatorCodeLabel">📜 生成的 Canvas 2D 物理动效代码</label>
-              <div style="display: flex; gap: 6px;">
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <button id="btnSaveCreatorToVault" class="btn-action primary" style="padding: 4px 10px; font-size: 0.75rem;" data-i18n="btnSaveToVault">💾 收藏到表情包</button>
+                <button id="btnExportCreatorVideo" class="btn-action secondary" style="padding: 4px 8px; font-size: 0.75rem;" data-i18n="btnExportVideo">🎬 导出动图</button>
                 <button id="btnCopyGeneratedCode" class="btn-action secondary" style="padding: 4px 8px; font-size: 0.75rem;" data-i18n="btnCopyCode">📋 复制代码</button>
                 <button id="btnApplyGeneratedExp" class="btn-action primary" style="padding: 4px 8px; font-size: 0.75rem;" data-i18n="btnApplyExp">✨ 重新上身</button>
               </div>

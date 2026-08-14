@@ -174,6 +174,7 @@ export class DialogueEngine {
       }
 
       if (this.onMessageUpdate) this.onMessageUpdate(this.history, { emotion: aiMessage.emotion, confidence: 0.95 });
+      if (this.onMessageComplete) this.onMessageComplete(aiMessage.text, aiMessage.emotion);
       this.isGenerating = false;
       return;
     }
@@ -265,8 +266,20 @@ export class DialogueEngine {
     this.avatar.setEmotion(finalAIEmotion);
 
     if (this.onMessageUpdate) this.onMessageUpdate(this.history, aiAnalysis);
+    if (this.onMessageComplete) this.onMessageComplete(aiMessage.text, finalAIEmotion);
 
     this.isGenerating = false;
+  }
+
+  appendSystemMessage(text, emotion = 'DIZZY') {
+    this.history.push({
+      sender: 'ai',
+      text,
+      emotion,
+      confidence: 1.0,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    if (this.onMessageUpdate) this.onMessageUpdate(this.history, { emotion, confidence: 1.0 });
   }
 
   sleep(ms) {
