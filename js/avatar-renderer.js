@@ -41,8 +41,20 @@ export class AvatarRenderer {
     this.isBlinking = false;
     this.nextBlinkTime = Date.now() + 3000;
     
-    // Web VTuber Face Tracking State
-    this.faceTracking = { active: false, roll: 0, offsetX: 0, offsetY: 0, mouthOpen: 0 };
+    // Web VTuber Face Tracking State (Bolder live reactive physics)
+    this.faceTracking = {
+      active: false,
+      roll: 0,
+      offsetX: 0,
+      offsetY: 0,
+      bodyX: 0,
+      bodyY: 0,
+      mouthOpen: 0,
+      smoothRoll: 0,
+      smoothBodyX: 0,
+      smoothBodyY: 0,
+      smoothMouth: 0
+    };
     
     // 3D Orbital Rings (for THINKING state - frames 19-22 in video)
     this.orbitalRings = [
@@ -332,6 +344,8 @@ export class AvatarRenderer {
       if (config.roll !== undefined) this.faceTracking.roll = config.roll;
       if (config.offsetX !== undefined) this.faceTracking.offsetX = config.offsetX;
       if (config.offsetY !== undefined) this.faceTracking.offsetY = config.offsetY;
+      if (config.bodyX !== undefined) this.faceTracking.bodyX = config.bodyX;
+      if (config.bodyY !== undefined) this.faceTracking.bodyY = config.bodyY;
       if (config.mouthOpen !== undefined) this.faceTracking.mouthOpen = config.mouthOpen;
     }
   }
@@ -1162,10 +1176,17 @@ export class AvatarRenderer {
   }
 
   drawBlobBody() {
+    // Apply bold VTuber body position & leaning transformations
+    const bodyShiftX = this.faceTracking.active ? this.faceTracking.smoothBodyX : 0;
+    const bodyShiftY = this.faceTracking.active ? this.faceTracking.smoothBodyY : 0;
+    const rot = this.faceTracking.active ? this.faceTracking.smoothRoll : this.rotation;
+    const leanScaleX = this.faceTracking.active ? (1 + Math.abs(rot) * 0.22 - (bodyShiftY / 100) * 0.12) : 1;
+    const leanScaleY = this.faceTracking.active ? (1 - Math.abs(rot) * 0.15 + (bodyShiftY / 100) * 0.18) : 1;
+
     this.ctx.save();
-    this.ctx.translate(this.x, this.y);
-    this.ctx.rotate(this.rotation);
-    this.ctx.scale(this.scaleX, this.scaleY);
+    this.ctx.translate(this.x + bodyShiftX, this.y + bodyShiftY);
+    this.ctx.rotate(rot);
+    this.ctx.scale(this.scaleX * leanScaleX, this.scaleY * leanScaleY);
 
     // 1. Draw Back Accessories FIRST
     if (this.studioMode) {
@@ -1263,6 +1284,37 @@ export class AvatarRenderer {
       }
     }
 
+    // 4. Draw Talking Mouth in VTuber Mode when user speaks
+    this.drawTalkingMouth();
+
+    this.ctx.restore();
+  }
+
+  drawTalkingMouth() {
+    if (!this.faceTracking.active || this.faceTracking.smoothMouth <= 0.08) return;
+
+    const mouthH = Math.min(24, Math.max(3, this.faceTracking.smoothMouth * 28));
+    const mouthW = Math.min(28, Math.max(8, 8 + this.faceTracking.smoothMouth * 20));
+    const mx = this.eyeOffset.x * 0.4;
+    const my = 26 + this.eyeOffset.y * 0.4;
+
+    this.ctx.save();
+    // Dark outer mouth
+    this.ctx.fillStyle = '#111115';
+    this.ctx.strokeStyle = '#2A2A35';
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.ellipse(mx, my, mouthW, mouthH, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Cute pink tongue
+    if (mouthH > 6) {
+      this.ctx.fillStyle = '#FF2D55';
+      this.ctx.beginPath();
+      this.ctx.ellipse(mx, my + mouthH * 0.35, mouthW * 0.65, mouthH * 0.55, 0, 0, Math.PI);
+      this.ctx.fill();
+    }
     this.ctx.restore();
   }
 

@@ -380,9 +380,20 @@
           <input type="password" id="inputAIApiKey" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);" placeholder="sk-...">
         </div>
 
-        <div class="setting-item" style="margin-bottom: 8px;">
-          <label style="display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted);" data-i18n="lblAIModel">模型名称 (Model Name)</label>
+        <div class="setting-item" style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 0.85rem; color: var(--text-muted);" data-i18n="lblAIModel">模型名称 (Model Name)</label>
+            <button type="button" id="btnFetchModels" class="btn-action secondary" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 6px; cursor: pointer;" data-i18n="btnFetchModels">🔄 获取可用模型列表</button>
+          </div>
+
+          <!-- Dynamic Model Dropdown (shown when fetched) -->
+          <div id="modelSelectContainer" class="hidden" style="margin-bottom: 8px;">
+            <select id="selectAIModelList" class="form-select" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 0.85rem;">
+            </select>
+          </div>
+
           <input type="text" id="inputAIModel" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);" placeholder="deepseek-chat">
+          <div id="lblModelFetchStatus" style="font-size: 0.75rem; margin-top: 4px; color: var(--text-muted); line-height: 1.4;"></div>
         </div>
       </div>
       <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">

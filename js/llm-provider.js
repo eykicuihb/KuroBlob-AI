@@ -154,6 +154,74 @@ Keep responses engaging, concise, and helpful.`;
     const finalCleanText = fullText.replace(/\[EMOTION:[A-Z_]+\]/gi, '').trim();
     return finalCleanText;
   }
+
+  /**
+   * Fetch available models from Ollama / OpenAI-compatible API
+   */
+  async fetchModels(customBaseUrl, customApiKey) {
+    let baseUrl = (customBaseUrl || this.config.baseUrl || '').trim();
+    if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+    const apiKey = customApiKey !== undefined ? customApiKey : this.config.apiKey;
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+    const models = new Set();
+
+    // 1. Try Ollama native tags endpoint (/api/tags)
+    try {
+      const ollamaTagsUrl = baseUrl.replace(/\/v1\/?$/, '') + '/api/tags';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const res = await fetch(ollamaTagsUrl, { method: 'GET', headers, signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.models && Array.isArray(data.models)) {
+          data.models.forEach(m => {
+            if (m.name) models.add(m.name);
+            else if (m.model) models.add(m.model);
+          });
+          if (models.size > 0) {
+            return { success: true, source: 'Ollama', models: Array.from(models) };
+          }
+        }
+      }
+    } catch (e) {
+      // Continue to OpenAI /models
+    }
+
+    // 2. Try Standard OpenAI /v1/models endpoint
+    try {
+      let modelsUrl = baseUrl;
+      if (!modelsUrl.endsWith('/models')) {
+        modelsUrl = modelsUrl.endsWith('/v1') ? `${modelsUrl}/models` : `${modelsUrl}/v1/models`;
+      }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(modelsUrl, { method: 'GET', headers, signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data.data) ? data.data : (Array.isArray(data.models) ? data.models : []);
+        list.forEach(m => {
+          const id = m.id || m.name || m.model;
+          if (id) models.add(id);
+        });
+        if (models.size > 0) {
+          return { success: true, source: 'OpenAI-Compatible', models: Array.from(models) };
+        }
+      }
+    } catch (e) {
+      // Failed to reach
+    }
+
+    return {
+      success: false,
+      error: '无法获取模型列表。如果使用本地 Ollama，请确认已在终端执行 `ollama serve`；或直接在下方手动输入模型名称。',
+      models: []
+    };
+  }
 }
 
 export const llmProvider = new LLMProvider();

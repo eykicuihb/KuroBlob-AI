@@ -119,6 +119,11 @@ export const translations = {
     lblAIBaseUrl: 'Base URL (API 端点)',
     lblAIApiKey: 'API Key (仅保存在本地浏览器 LocalStorage)',
     lblAIModel: '模型名称 (Model Name)',
+    btnFetchModels: '🔄 获取可用模型列表',
+    btnFetchLoading: '⏳ 获取模型列表中...',
+    modelsFetchedSuccess: '✅ 成功获取 {count} 个可用模型 (来源: {source})',
+    modelsFetchFailed: '⚠️ 未能获取模型列表（本地 Ollama 请确认已运行 ollama serve；或直接输入模型名称）',
+    selectModelPlaceholder: '-- 从检测到的模型列表中快速选择 --',
     btnCancel: '取消',
     btnSaveAI: '💾 保存并生效',
     aiSavedSuccess: '✅ AI 大模型配置已保存生效！'
@@ -144,7 +149,7 @@ export const translations = {
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',
-    studioSubtitle: 'Design your custom 3D liquid mercury procedural avatar',
+    studioSubtitle: 'Design your own living 3D procedural avatar companion',
     group1: '1. Body Shape & Elasticity',
     group2: '2. Capsule Eyes & Expressions',
     group3: '3. Accessories & Aura',
@@ -195,15 +200,15 @@ export const translations = {
     optAuraFire: '🔥 Flashing Flames',
 
     // Shape Chips
-    shapeBlob: '💧 Mercury Blob',
+    shapeBlob: '💧 Liquid Mercury',
     shapeCloud: '☁️ Cloud',
     shapeTornado: '🌪️ Tornado',
     shapeUFO: '🛸 UFO Saucer',
-    shapeCat: '🐱 Neko Ears',
-    shapeRabbit: '🐰 Bunny Ears',
+    shapeCat: '🐱 Cat Ears',
+    shapeRabbit: '🐰 Rabbit Ears',
     shapePanda: '🐼 Panda Ears',
-    shapeRobot: '🤖 Robot Box',
-    shapeTriangle: '📐 Thinking Triangle',
+    shapeRobot: '🤖 Robot Square',
+    shapeTriangle: '📐 Triangle Focus',
 
     // Eye Chips
     eyePill: '💊 Standard Capsule',
@@ -238,6 +243,11 @@ export const translations = {
     lblAIBaseUrl: 'Base URL (API Endpoint)',
     lblAIApiKey: 'API Key (Stored only in local browser)',
     lblAIModel: 'Model Name',
+    btnFetchModels: '🔄 Fetch Models',
+    btnFetchLoading: '⏳ Fetching Models...',
+    modelsFetchedSuccess: '✅ Detected {count} available models (Source: {source})',
+    modelsFetchFailed: '⚠️ Cannot fetch models. If using Ollama, ensure `ollama serve` is running; or type model name directly.',
+    selectModelPlaceholder: '-- Select from detected models --',
     btnCancel: 'Cancel',
     btnSaveAI: '💾 Save & Apply',
     aiSavedSuccess: '✅ AI Model settings saved successfully!'
@@ -262,8 +272,14 @@ export class I18nManager {
     return this.lang;
   }
 
-  t(key) {
-    return translations[this.lang]?.[key] || translations['zh-CN']?.[key] || key;
+  t(key, params = {}) {
+    let str = translations[this.lang]?.[key] || translations['zh-CN']?.[key] || key;
+    if (typeof str === 'string' && params) {
+      Object.entries(params).forEach(([k, v]) => {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+      });
+    }
+    return str;
   }
 
   applyTranslations() {
@@ -283,18 +299,7 @@ export class I18nManager {
       }
     });
 
-    // 3. Option elements
-    document.querySelectorAll('option[data-i18n]').forEach(opt => {
-      const key = opt.dataset.i18n;
-      if (this.t(key)) {
-        opt.textContent = this.t(key);
-      }
-    });
-
-    // 4. Lang toggle button label
-    const langText = document.getElementById('langText');
-    if (langText) {
-      langText.textContent = this.lang === 'zh-CN' ? 'English' : '中文';
-    }
+    // 3. Document Title
+    document.title = `${this.t('brandTitle')} - Living 3D Procedural Avatar`;
   }
 }

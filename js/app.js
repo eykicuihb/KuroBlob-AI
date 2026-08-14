@@ -110,6 +110,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputAIApiKey = document.getElementById('inputAIApiKey');
   const inputAIModel = document.getElementById('inputAIModel');
 
+  const btnFetchModels = document.getElementById('btnFetchModels');
+  const modelSelectContainer = document.getElementById('modelSelectContainer');
+  const selectAIModelList = document.getElementById('selectAIModelList');
+  const lblModelFetchStatus = document.getElementById('lblModelFetchStatus');
+
   const providerPresets = {
     deepseek: { baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
     openai: { baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
@@ -125,13 +130,79 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputAIBaseUrl) inputAIBaseUrl.value = llmProvider.config.baseUrl;
     if (inputAIApiKey) inputAIApiKey.value = llmProvider.config.apiKey;
     if (inputAIModel) inputAIModel.value = llmProvider.config.model;
+    if (lblModelFetchStatus) lblModelFetchStatus.textContent = '';
     aiSettingsModal?.classList.add('active');
+
+    if (selectAIProvider?.value === 'ollama') {
+      doFetchModels(true);
+    }
   };
 
   const closeAIModal = () => {
     soundFx.pop(600, 0.05);
     aiSettingsModal?.classList.remove('active');
   };
+
+  const doFetchModels = async (silent = false) => {
+    if (!btnFetchModels) return;
+    btnFetchModels.disabled = true;
+    btnFetchModels.textContent = i18n.t('btnFetchLoading');
+    if (lblModelFetchStatus) {
+      lblModelFetchStatus.textContent = i18n.t('btnFetchLoading');
+      lblModelFetchStatus.style.color = 'var(--text-muted)';
+    }
+
+    try {
+      const baseUrl = inputAIBaseUrl?.value?.trim() || '';
+      const apiKey = inputAIApiKey?.value?.trim() || '';
+      const result = await llmProvider.fetchModels(baseUrl, apiKey);
+
+      if (result.success && result.models.length > 0) {
+        if (selectAIModelList) {
+          selectAIModelList.innerHTML = `<option value="">${i18n.t('selectModelPlaceholder')}</option>`;
+          result.models.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = `📦 ${m}`;
+            if (m === inputAIModel.value) opt.selected = true;
+            selectAIModelList.appendChild(opt);
+          });
+        }
+        modelSelectContainer?.classList.remove('hidden');
+        if (lblModelFetchStatus) {
+          lblModelFetchStatus.textContent = i18n.t('modelsFetchedSuccess', { count: result.models.length, source: result.source });
+          lblModelFetchStatus.style.color = '#34C759';
+        }
+        if (!silent) soundFx.pop(950, 0.08);
+      } else {
+        if (lblModelFetchStatus) {
+          lblModelFetchStatus.textContent = result.error || i18n.t('modelsFetchFailed');
+          lblModelFetchStatus.style.color = '#FF9500';
+        }
+      }
+    } catch (e) {
+      if (lblModelFetchStatus) {
+        lblModelFetchStatus.textContent = i18n.t('modelsFetchFailed');
+        lblModelFetchStatus.style.color = '#FF9500';
+      }
+    } finally {
+      btnFetchModels.disabled = false;
+      btnFetchModels.textContent = i18n.t('btnFetchModels');
+    }
+  };
+
+  if (btnFetchModels) {
+    btnFetchModels.addEventListener('click', () => doFetchModels(false));
+  }
+
+  if (selectAIModelList) {
+    selectAIModelList.addEventListener('change', (e) => {
+      if (e.target.value) {
+        soundFx.pop(800, 0.05);
+        if (inputAIModel) inputAIModel.value = e.target.value;
+      }
+    });
+  }
 
   if (aiSettingsBtn) aiSettingsBtn.addEventListener('click', openAIModal);
   if (closeAIModalBtn) closeAIModalBtn.addEventListener('click', closeAIModal);
@@ -143,6 +214,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (preset) {
         if (inputAIBaseUrl) inputAIBaseUrl.value = preset.baseUrl;
         if (inputAIModel) inputAIModel.value = preset.model;
+      }
+      if (e.target.value === 'ollama') {
+        doFetchModels(false);
       }
     });
   }
