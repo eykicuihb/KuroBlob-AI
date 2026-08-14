@@ -1,9 +1,6 @@
-/**
- * DialogueEngine - Natural Language Conversation & State Controller
- * Manages the dialogue stream and coordinates real-time avatar expression transitions.
- */
-
 import { SentimentAnalyzer } from './sentiment-analyzer.js';
+import { llmProvider } from './llm-provider.js';
+import { soundFx } from './sound-fx.js';
 
 export class DialogueEngine {
   constructor(avatarRenderer, onMessageUpdate) {
@@ -110,7 +107,7 @@ export class DialogueEngine {
   }
 
   /**
-   * Process a user message end-to-end
+   * Process a user message end-to-end (Real LLM or Local NLP Engine)
    */
   async processUserMessage(userText) {
     if (this.isGenerating || !userText.trim()) return;
@@ -133,7 +130,56 @@ export class DialogueEngine {
 
     // 2. Avatar enters THINKING state (3D Orbital Rings spin)
     this.avatar.setEmotion('THINKING');
-    await this.sleep(1200);
+
+    // Branch A: Real BYOK LLM is configured and enabled!
+    if (llmProvider.isConfigured()) {
+      const aiMessage = {
+        sender: 'ai',
+        text: '',
+        emotion: 'THINKING',
+        confidence: 0.95,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isRealLLM: true
+      };
+      this.history.push(aiMessage);
+
+      try {
+        let currentEmotion = 'HAPPY';
+        const finalCleanText = await llmProvider.streamChat(
+          this.history.slice(0, -1),
+          (chunkText) => {
+            aiMessage.text = chunkText;
+            if (this.onMessageUpdate) this.onMessageUpdate(this.history, { emotion: currentEmotion, confidence: 0.95 });
+          },
+          (detectedEmotion) => {
+            currentEmotion = detectedEmotion;
+            aiMessage.emotion = detectedEmotion;
+            this.avatar.setEmotion(detectedEmotion);
+          }
+        );
+
+        aiMessage.text = finalCleanText;
+        if (aiMessage.emotion === 'THINKING') {
+          // Fallback inference if no explicit tag was returned
+          const finalAnalysis = this.analyzer.analyze(finalCleanText);
+          const mood = finalAnalysis.emotion !== 'IDLE' ? finalAnalysis.emotion : 'HAPPY';
+          aiMessage.emotion = mood;
+          this.avatar.setEmotion(mood);
+        }
+      } catch (err) {
+        console.error('Real LLM streaming failed:', err);
+        aiMessage.text = `⚠️ AI 请求异常: ${err.message || '请检查 API Key 和网络配置'}`;
+        aiMessage.emotion = 'CONFUSED';
+        this.avatar.setEmotion('CONFUSED');
+      }
+
+      if (this.onMessageUpdate) this.onMessageUpdate(this.history, { emotion: aiMessage.emotion, confidence: 0.95 });
+      this.isGenerating = false;
+      return;
+    }
+
+    // Branch B: Built-in local NLP rule-based engine
+    await this.sleep(1000);
 
     // 3. Pick AI Response Text based on intent
     const pool = this.responses[userAnalysis.emotion] || this.responses.IDLE;
@@ -166,12 +212,13 @@ export class DialogueEngine {
 
     for (let i = 0; i < responseText.length; i++) {
       aiMessage.text += responseText[i];
+      if (i % 3 === 0) soundFx.typingBlip();
       if (this.onMessageUpdate) this.onMessageUpdate(this.history, aiAnalysis);
-      await this.sleep(30);
+      await this.sleep(25);
     }
 
     // 6. Response Stream Finished: Set Avatar Emotion strictly to match AI Response Text!
-    await this.sleep(300);
+    await this.sleep(200);
     this.avatar.setEmotion(finalAIEmotion);
 
     if (this.onMessageUpdate) this.onMessageUpdate(this.history, aiAnalysis);

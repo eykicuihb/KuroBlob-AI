@@ -103,7 +103,25 @@ export const translations = {
     promptBored: '🙄 无聊翻白眼',
     promptCool: '😎 酷炫大佬',
     promptRobot: '🤖 机器人模式',
-    promptEww: '🤢 嫌弃拉胯'
+    promptEww: '🤢 嫌弃拉胯',
+
+    // Multimodal & AI BYOK
+    soundOn: '音效已开',
+    soundOff: '音效已关',
+    vtuberMode: 'VTuber 面捕',
+    vtuberStop: '停止面捕',
+    aiSettings: 'AI 设置',
+    canvasHint: '💡 提示：可直接用鼠标/手指拉伸果冻捏脸，或拖拽双眼移动',
+    modalAITitle: '🤖 配置真实 AI 大模型 (BYOK)',
+    modalAIDesc: '接入自定义大模型 API，支持流式对话并根据返回的情绪 Tag 实时驱动 KuroBlob 动态表情与动作。',
+    lblAIEnable: '启用真实大模型对话',
+    lblAIProvider: 'AI 厂商 / 预设服务',
+    lblAIBaseUrl: 'Base URL (API 端点)',
+    lblAIApiKey: 'API Key (仅保存在本地浏览器 LocalStorage)',
+    lblAIModel: '模型名称 (Model Name)',
+    btnCancel: '取消',
+    btnSaveAI: '💾 保存并生效',
+    aiSavedSuccess: '✅ AI 大模型配置已保存生效！'
   },
   'en': {
     brandTitle: 'KuroBlob AI Expression Engine',
@@ -204,18 +222,38 @@ export const translations = {
     promptBored: '🙄 So Boring',
     promptCool: '😎 Sunglasses Boss',
     promptRobot: '🤖 Robot Matrix',
-    promptEww: '🤢 Disgusted Eww'
+    promptEww: '🤢 Disgusted Eww',
+
+    // Multimodal & AI BYOK
+    soundOn: 'Sound On',
+    soundOff: 'Sound Muted',
+    vtuberMode: 'VTuber Mode',
+    vtuberStop: 'Stop VTuber',
+    aiSettings: 'AI Settings',
+    canvasHint: '💡 Tip: Drag directly on the jelly blob to stretch & squeeze, or drag eyes to reposition',
+    modalAITitle: '🤖 Bring Your Own AI Model (BYOK)',
+    modalAIDesc: 'Connect any OpenAI-compatible API to stream chat with real-time emotion tag detection.',
+    lblAIEnable: 'Enable Real AI Chat',
+    lblAIProvider: 'AI Provider / Preset',
+    lblAIBaseUrl: 'Base URL (API Endpoint)',
+    lblAIApiKey: 'API Key (Stored only in local browser)',
+    lblAIModel: 'Model Name',
+    btnCancel: 'Cancel',
+    btnSaveAI: '💾 Save & Apply',
+    aiSavedSuccess: '✅ AI Model settings saved successfully!'
   }
 };
 
 export class I18nManager {
   constructor() {
-    this.lang = localStorage.getItem('KUROBLOB_LANG') || 'zh-CN';
+    this.lang = typeof localStorage !== 'undefined' ? (localStorage.getItem('KUROBLOB_LANG') || 'zh-CN') : 'zh-CN';
   }
 
   setLanguage(lang) {
     this.lang = lang;
-    localStorage.setItem('KUROBLOB_LANG', lang);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('KUROBLOB_LANG', lang);
+    }
     this.applyTranslations();
   }
 

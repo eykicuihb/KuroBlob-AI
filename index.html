@@ -20,6 +20,15 @@
           <span class="status-dot"></span>
           <span data-i18n="canvasStatus">Canvas 60 FPS 物理引擎</span>
         </div>
+        <button id="soundToggle" class="btn-icon" title="Toggle Sound FX / 音效开关">
+          <span id="soundIcon">🔊</span> <span id="soundText" data-i18n="soundOn">音效已开</span>
+        </button>
+        <button id="vtuberToggle" class="btn-icon" title="Toggle Web VTuber Mode / 摄像头面捕模式">
+          <span id="vtuberIcon">📹</span> <span id="vtuberText" data-i18n="vtuberMode">VTuber 面捕</span>
+        </button>
+        <button id="aiSettingsBtn" class="btn-icon" title="Configure Real LLM (BYOK) / AI 大模型设置">
+          <span>🤖</span> <span data-i18n="aiSettings">AI 设置</span>
+        </button>
         <button id="langToggle" class="btn-icon" title="Switch Language / 切换中英文">
           <span>🌐</span> <span id="langText">English</span>
         </button>
@@ -52,6 +61,8 @@
 
         <div class="canvas-container">
           <canvas id="avatarCanvas"></canvas>
+          <div id="vtuberPreview" class="vtuber-preview hidden"></div>
+          <div class="canvas-hint" data-i18n="canvasHint">💡 提示：可直接用鼠标/手指拉伸果冻捏脸，或拖拽双眼移动</div>
         </div>
 
         <!-- Manual Emotion Tester Bar -->
@@ -327,6 +338,54 @@
       </div>
       <div class="modal-footer">
         <button id="copyCodeBtn" class="btn-action primary">📋 复制代码到剪贴板</button>
+      </div>
+    </div>
+  <!-- AI BYOK Settings Modal -->
+  <div id="aiSettingsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="modalAITitle">🤖 配置真实 AI 大模型 (BYOK)</h3>
+        <button id="closeAIModalBtn" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;" data-i18n="modalAIDesc">
+          接入自定义大模型 API，支持流式对话并根据返回的情绪 Tag 实时驱动 KuroBlob 动态表情与动作。
+        </p>
+
+        <div class="setting-item" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <label style="font-size: 0.9rem; font-weight: 500;" data-i18n="lblAIEnable">启用真实大模型对话</label>
+          <input type="checkbox" id="chkEnableLLM" style="width: 18px; height: 18px; cursor: pointer;">
+        </div>
+
+        <div class="setting-item" style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted);" data-i18n="lblAIProvider">AI 厂商 / 预设服务</label>
+          <select id="selectAIProvider" class="form-select" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);">
+            <option value="deepseek">DeepSeek (推荐: deepseek-chat)</option>
+            <option value="openai">OpenAI (gpt-4o-mini / gpt-3.5-turbo)</option>
+            <option value="gemini">Google Gemini (OpenAI 兼容端点)</option>
+            <option value="ollama">Ollama (本地私有化 http://localhost:11434/v1)</option>
+            <option value="custom">自定义 OpenAI 兼容接口</option>
+          </select>
+        </div>
+
+        <div class="setting-item" style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted);" data-i18n="lblAIBaseUrl">Base URL (API 端点)</label>
+          <input type="text" id="inputAIBaseUrl" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);" placeholder="https://api.deepseek.com/v1">
+        </div>
+
+        <div class="setting-item" style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted);" data-i18n="lblAIApiKey">API Key (仅保存在本地浏览器 LocalStorage)</label>
+          <input type="password" id="inputAIApiKey" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);" placeholder="sk-...">
+        </div>
+
+        <div class="setting-item" style="margin-bottom: 8px;">
+          <label style="display: block; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-muted);" data-i18n="lblAIModel">模型名称 (Model Name)</label>
+          <input type="text" id="inputAIModel" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main);" placeholder="deepseek-chat">
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="btnCancelAIModal" class="btn-action secondary" data-i18n="btnCancel">取消</button>
+        <button id="btnSaveAIModal" class="btn-action primary" data-i18n="btnSaveAI">💾 保存并生效</button>
       </div>
     </div>
   </div>
