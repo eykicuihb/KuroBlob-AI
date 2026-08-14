@@ -41,6 +41,9 @@ export class AvatarRenderer {
     this.isBlinking = false;
     this.nextBlinkTime = Date.now() + 3000;
     
+    // Web VTuber Face Tracking State
+    this.faceTracking = { active: false, roll: 0, offsetX: 0, offsetY: 0, mouthOpen: 0 };
+    
     // 3D Orbital Rings (for THINKING state - frames 19-22 in video)
     this.orbitalRings = [
       { radius: 130, tiltX: 0.8, tiltY: 0.3, rotZ: 0.2, speed: 0.025, color1: '#FF3B30', color2: '#FF9500', width: 6, angle: 0 },
@@ -320,6 +323,16 @@ export class AvatarRenderer {
     this.studioMode = enabled;
     if (config) {
       this.customConfig = { ...this.customConfig, ...config };
+    }
+  }
+
+  setFaceTracking(active, config = {}) {
+    this.faceTracking.active = active;
+    if (config) {
+      if (config.roll !== undefined) this.faceTracking.roll = config.roll;
+      if (config.offsetX !== undefined) this.faceTracking.offsetX = config.offsetX;
+      if (config.offsetY !== undefined) this.faceTracking.offsetY = config.offsetY;
+      if (config.mouthOpen !== undefined) this.faceTracking.mouthOpen = config.mouthOpen;
     }
   }
 
@@ -914,7 +927,9 @@ export class AvatarRenderer {
     const lerpRate = 0.08;
     this.scaleX += (targetScaleX - this.scaleX) * lerpRate;
     this.scaleY += (targetScaleY - this.scaleY) * lerpRate;
-    this.rotation += (targetRotation - this.rotation) * lerpRate;
+    
+    const effectiveTargetRotation = this.faceTracking.active ? this.faceTracking.roll : targetRotation;
+    this.rotation += (effectiveTargetRotation - this.rotation) * (this.faceTracking.active ? 0.25 : lerpRate);
 
     if (this.studioMode) {
       targetEyeWidth = this.customConfig.eyeWidth;
@@ -1013,6 +1028,12 @@ export class AvatarRenderer {
   }
 
   updateGazeTracking() {
+    if (this.faceTracking.active) {
+      this.eyeOffset.x += (this.faceTracking.offsetX - this.eyeOffset.x) * 0.25;
+      this.eyeOffset.y += (this.faceTracking.offsetY - this.eyeOffset.y) * 0.25;
+      return;
+    }
+
     if (this.mouse.isOver) {
       const dx = (this.mouse.x - this.x) * 0.12;
       const dy = (this.mouse.y - this.y) * 0.12;

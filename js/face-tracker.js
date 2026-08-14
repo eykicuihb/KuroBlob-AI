@@ -1,28 +1,35 @@
 /**
- * 📹 FaceTracker — Lightweight Web Camera Face Tracking for KuroBlob AI (Web VTuber Mode)
- * 100% Client-side. Tracks head tilt, position drift, and eye blinks in real-time.
+ * Web VTuber Camera Face Tracker
+ * Privacy-first lightweight client-side face tracker.
+ * Tracks user head roll angle, head position offset (X/Y), and movement
+ * to dynamically drive KuroBlob's avatar tilt and eye gaze in real-time.
  */
 
 export class FaceTracker {
   constructor(avatarRenderer) {
     this.avatar = avatarRenderer;
     this.video = null;
+    this.stream = null;
     this.canvas = null;
     this.ctx = null;
-    this.stream = null;
     this.isRunning = false;
     this.animId = null;
-    this.detector = null;
 
-    // Filtered smoothing values
+    // Smoothed tracking outputs
     this.smoothRoll = 0;
     this.smoothOffsetX = 0;
     this.smoothOffsetY = 0;
-    this.lastBlinkTime = 0;
 
-    // Check for native browser FaceDetector
-    if (window.FaceDetector) {
+    // Previous frame memory for motion flow
+    this.prevFrame = null;
+    this.baselineX = null;
+    this.baselineY = null;
+
+    // Native browser FaceDetector (Chrome Experimental / Android)
+    this.detector = null;
+    if (typeof window !== 'undefined' && 'FaceDetector' in window) {
       try {
+        // @ts-ignore
         this.detector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
       } catch (e) {
         this.detector = null;
@@ -45,22 +52,25 @@ export class FaceTracker {
 
       this.video = document.createElement('video');
       this.video.srcObject = this.stream;
-      this.video.setAttribute('playsinline', 'true');
+      this.video.setAttribute('playsinline', '');
       this.video.muted = true;
       await this.video.play();
 
       // Create mini preview canvas
       if (previewContainer) {
         this.canvas = document.createElement('canvas');
-        this.canvas.width = 120;
-        this.canvas.height = 90;
+        this.canvas.width = 140;
+        this.canvas.height = 105;
         this.canvas.className = 'face-preview-canvas';
-        this.ctx = this.canvas.getContext('2d');
+        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
         previewContainer.innerHTML = '';
         previewContainer.appendChild(this.canvas);
       }
 
       this.isRunning = true;
+      this.prevFrame = null;
+      this.baselineX = null;
+      this.baselineY = null;
       this.trackLoop();
       return true;
     } catch (err) {
@@ -90,20 +100,18 @@ export class FaceTracker {
 
     // Reset avatar tracking offsets
     if (this.avatar) {
-      this.avatar.rotation = 0;
-      this.avatar.targetEyeOffset.x = 0;
-      this.avatar.targetEyeOffset.y = 0;
+      this.avatar.setFaceTracking(false);
     }
   }
 
   async trackLoop() {
     if (!this.isRunning || !this.video) return;
 
-    if (this.video.readyState === this.video.HAVE_ENOUGH_DATA) {
+    if (this.video.readyState >= 2) {
       let faceDetected = false;
-      let roll = 0;
-      let offsetX = 0;
-      let offsetY = 0;
+      let rawRoll = 0;
+      let rawOffsetX = 0;
+      let rawOffsetY = 0;
 
       // Method A: Native FaceDetector API (Chrome / Edge / Android)
       if (this.detector) {
@@ -111,100 +119,142 @@ export class FaceTracker {
           const faces = await this.detector.detect(this.video);
           if (faces && faces.length > 0) {
             const box = faces[0].boundingBox;
-            const videoW = this.video.videoWidth;
-            const videoH = this.video.videoHeight;
+            const videoW = this.video.videoWidth || 320;
+            const videoH = this.video.videoHeight || 240;
 
             const centerX = box.x + box.width / 2;
             const centerY = box.y + box.height / 2;
 
             // Normalized mirrored offset
-            offsetX = -((centerX - videoW / 2) / (videoW / 2)) * 28;
-            offsetY = ((centerY - videoH / 2) / (videoH / 2)) * 22;
+            rawOffsetX = -((centerX - videoW / 2) / (videoW / 2)) * 36;
+            rawOffsetY = ((centerY - videoH / 2) / (videoH / 2)) * 28;
 
-            // Landmarks (eyes) for roll calculation if available
+            // Landmarks (eyes) for roll calculation
             const eyes = faces[0].landmarks?.filter(l => l.type === 'eye') || [];
             if (eyes.length >= 2) {
               const dx = eyes[1].locations[0].x - eyes[0].locations[0].x;
               const dy = eyes[1].locations[0].y - eyes[0].locations[0].y;
-              roll = -Math.atan2(dy, dx);
+              rawRoll = -Math.atan2(dy, dx) * 1.5;
+            } else {
+              rawRoll = -(rawOffsetX / 36) * 0.35;
             }
             faceDetected = true;
           }
         } catch (e) {
-          // Fallback to optical tracker below
+          // Fallback to optical motion flow
         }
       }
 
-      // Method B: Optical Center-of-Mass & Head Movement Tracker Fallback
+      // Method B: Optical Center-of-Mass & Adaptive Brightness/Motion Centroid Fallback
       if (!faceDetected) {
         const tracking = this.computeOpticalTracking();
-        offsetX = tracking.offsetX;
-        offsetY = tracking.offsetY;
-        roll = tracking.roll;
+        rawOffsetX = tracking.offsetX;
+        rawOffsetY = tracking.offsetY;
+        rawRoll = tracking.roll;
       }
 
-      // Smooth interpolation for jitter-free 60 FPS motion
-      this.smoothRoll += (roll - this.smoothRoll) * 0.15;
-      this.smoothOffsetX += (offsetX - this.smoothOffsetX) * 0.18;
-      this.smoothOffsetY += (offsetY - this.smoothOffsetY) * 0.18;
+      // Fast, responsive smoothing (0.28 lerp for low latency)
+      this.smoothRoll += (rawRoll - this.smoothRoll) * 0.28;
+      this.smoothOffsetX += (rawOffsetX - this.smoothOffsetX) * 0.30;
+      this.smoothOffsetY += (rawOffsetY - this.smoothOffsetY) * 0.30;
 
-      // Apply to KuroBlob avatar
+      // Apply directly to KuroBlob avatar
       if (this.avatar) {
-        this.avatar.rotation = Math.max(-0.4, Math.min(0.4, this.smoothRoll));
-        this.avatar.targetEyeOffset.x = this.smoothOffsetX;
-        this.avatar.targetEyeOffset.y = this.smoothOffsetY;
+        this.avatar.setFaceTracking(true, {
+          roll: Math.max(-0.45, Math.min(0.45, this.smoothRoll)),
+          offsetX: Math.max(-35, Math.min(35, this.smoothOffsetX)),
+          offsetY: Math.max(-25, Math.min(25, this.smoothOffsetY))
+        });
       }
 
-      // Render mini PiP canvas
-      this.renderPreview(offsetX, offsetY, roll);
+      // Render mini PiP canvas preview with head tracking visualizer
+      this.renderPreview(rawOffsetX, rawOffsetY, this.smoothRoll);
     }
 
     this.animId = requestAnimationFrame(() => this.trackLoop());
   }
 
   computeOpticalTracking() {
-    if (!this.ctx || !this.video) return { offsetX: 0, offsetY: 0, roll: 0 };
+    if (!this.ctx || !this.video || !this.canvas) return { offsetX: 0, offsetY: 0, roll: 0 };
 
-    // Draw downsampled frame to preview canvas
+    const cw = this.canvas.width;
+    const ch = this.canvas.height;
+
+    // Draw downsampled mirrored frame to preview canvas
     this.ctx.save();
     this.ctx.scale(-1, 1);
-    this.ctx.drawImage(this.video, -this.canvas.width, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.video, -cw, 0, cw, ch);
     this.ctx.restore();
 
-    // Sample center quadrant for optical skin/face centroid
-    const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    const imgData = this.ctx.getImageData(0, 0, cw, ch);
     const data = imgData.data;
+
     let sumX = 0;
     let sumY = 0;
     let weightSum = 0;
 
-    for (let y = 10; y < this.canvas.height - 10; y += 4) {
-      for (let x = 10; x < this.canvas.width - 10; x += 4) {
-        const idx = (y * this.canvas.width + x) * 4;
+    // Left vs Right brightness for Head Roll detection
+    let leftLumaSum = 0;
+    let rightLumaSum = 0;
+    let leftCount = 0;
+    let rightCount = 0;
+
+    for (let y = 8; y < ch - 8; y += 3) {
+      for (let x = 8; x < cw - 8; x += 3) {
+        const idx = (y * cw + x) * 4;
         const r = data[idx];
         const g = data[idx + 1];
         const b = data[idx + 2];
+        const luma = (r * 0.299 + g * 0.587 + b * 0.114);
 
-        // Skin-tone & face luminance heuristic
-        const isFaceLuma = (r > 60 && g > 40 && b > 20 && r > b && (r - g) > 10);
-        if (isFaceLuma) {
-          sumX += x;
-          sumY += y;
-          weightSum++;
+        // Center weight priority
+        const distFromCenter = Math.hypot((x - cw / 2) / (cw / 2), (y - ch / 2) / (ch / 2));
+        const centerWeight = Math.max(0.2, 1.2 - distFromCenter * 0.8);
+
+        // Face & Foreground detection heuristic (warm tone or high center luminance)
+        const isWarm = (r > g && g > b && r > 45);
+        const isBright = luma > 85;
+
+        if (isWarm || isBright) {
+          const weight = (isWarm ? 2.0 : 1.0) * centerWeight;
+          sumX += x * weight;
+          sumY += y * weight;
+          weightSum += weight;
+        }
+
+        // Left/right quadrant comparison
+        if (x < cw / 2) {
+          leftLumaSum += luma;
+          leftCount++;
+        } else {
+          rightLumaSum += luma;
+          rightCount++;
         }
       }
     }
 
-    if (weightSum > 30) {
+    if (weightSum > 10) {
       const avgX = sumX / weightSum;
       const avgY = sumY / weightSum;
 
-      const normX = (avgX - this.canvas.width / 2) / (this.canvas.width / 2);
-      const normY = (avgY - this.canvas.height / 2) / (this.canvas.height / 2);
+      if (this.baselineX === null) {
+        this.baselineX = avgX;
+        this.baselineY = avgY;
+      } else {
+        // Slowly drift baseline to accommodate posture shifts
+        this.baselineX += (avgX - this.baselineX) * 0.005;
+        this.baselineY += (avgY - this.baselineY) * 0.005;
+      }
 
-      const offsetX = normX * 24;
-      const offsetY = normY * 18;
-      const roll = normX * 0.25;
+      const diffX = (avgX - this.baselineX) / (cw * 0.3);
+      const diffY = (avgY - this.baselineY) / (ch * 0.3);
+
+      const offsetX = Math.max(-35, Math.min(35, diffX * 35));
+      const offsetY = Math.max(-25, Math.min(25, diffY * 25));
+
+      // Compute roll from asymmetry and horizontal displacement
+      const lumaDiff = (leftCount && rightCount) ? ((rightLumaSum / rightCount) - (leftLumaSum / leftCount)) / 100 : 0;
+      const roll = Math.max(-0.45, Math.min(0.45, (diffX * 0.4) + (lumaDiff * 0.2)));
 
       return { offsetX, offsetY, roll };
     }
@@ -215,22 +265,35 @@ export class FaceTracker {
   renderPreview(offsetX, offsetY, roll) {
     if (!this.ctx || !this.canvas) return;
 
-    // Overlay tracking crosshair & roll indicator
+    const cw = this.canvas.width;
+    const ch = this.canvas.height;
+
+    // Overlay tracking crosshair & roll angle indicator
     this.ctx.save();
     this.ctx.strokeStyle = '#00F2FE';
-    this.ctx.lineWidth = 1.5;
-    const cx = this.canvas.width / 2 + offsetX * 1.2;
-    const cy = this.canvas.height / 2 + offsetY * 1.2;
+    this.ctx.lineWidth = 2;
+    this.ctx.shadowColor = 'rgba(0, 242, 254, 0.6)';
+    this.ctx.shadowBlur = 6;
 
+    const cx = cw / 2 + (offsetX / 35) * (cw * 0.35);
+    const cy = ch / 2 + (offsetY / 25) * (ch * 0.35);
+
+    // Target circle
     this.ctx.beginPath();
-    this.ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+    this.ctx.arc(cx, cy, 18, 0, Math.PI * 2);
     this.ctx.stroke();
 
-    // Roll indicator line
+    // Roll indicator angle line
+    this.ctx.strokeStyle = '#FF3B30';
     this.ctx.beginPath();
-    this.ctx.moveTo(cx - Math.cos(roll) * 20, cy - Math.sin(roll) * 20);
-    this.ctx.lineTo(cx + Math.cos(roll) * 20, cy + Math.sin(roll) * 20);
+    this.ctx.moveTo(cx - Math.cos(roll) * 26, cy - Math.sin(roll) * 26);
+    this.ctx.lineTo(cx + Math.cos(roll) * 26, cy + Math.sin(roll) * 26);
     this.ctx.stroke();
+
+    // Status text
+    this.ctx.font = '10px Outfit, sans-serif';
+    this.ctx.fillStyle = '#00F2FE';
+    this.ctx.fillText(`VTuber: Active`, 6, 14);
 
     this.ctx.restore();
   }
