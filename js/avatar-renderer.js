@@ -349,6 +349,32 @@ export class AvatarRenderer {
     this.greenScreen = !!active;
   }
 
+  setRecordingBackground(color) {
+    this.recordingBackground = color;
+  }
+
+  exportPNG(themeOverride = null) {
+    const isLight = (themeOverride || this.theme) === 'light';
+    const offscreen = document.createElement('canvas');
+    offscreen.width = this.canvas.width;
+    offscreen.height = this.canvas.height;
+    const offCtx = offscreen.getContext('2d');
+
+    if (this.greenScreen) {
+      offCtx.fillStyle = '#00FF00';
+      offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+    } else if (isLight) {
+      offCtx.fillStyle = '#FFFFFF';
+      offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+    } else {
+      offCtx.fillStyle = '#0F172A';
+      offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+    }
+
+    offCtx.drawImage(this.canvas, 0, 0);
+    return offscreen.toDataURL('image/png');
+  }
+
   setStudioMode(enabled, config = {}) {
     this.studioMode = enabled;
     if (config) {
@@ -1172,6 +1198,9 @@ export class AvatarRenderer {
   draw() {
     if (this.greenScreen) {
       this.ctx.fillStyle = '#00FF00';
+      this.ctx.fillRect(0, 0, this.width, this.height);
+    } else if (this.recordingBackground) {
+      this.ctx.fillStyle = this.recordingBackground;
       this.ctx.fillRect(0, 0, this.width, this.height);
     } else {
       this.ctx.clearRect(0, 0, this.width, this.height);

@@ -766,6 +766,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const origText = btn.textContent;
     btn.disabled = true;
     btn.textContent = '⏳ 正在录制 60 FPS 动图...';
+
+    // Set background during video capture so transparent canvas doesn't encode to pure black:
+    // Light mode uses #FFFFFF (white) so black body is distinct; dark mode uses #0F172A
+    const currentTheme = root.getAttribute('data-theme') || avatar.theme || 'dark';
+    if (!avatar.greenScreen) {
+      avatar.setRecordingBackground(currentTheme === 'light' ? '#FFFFFF' : '#0F172A');
+    }
+
     try {
       await animationRecorder.record(canvas, 3, (progress) => {
         btn.textContent = `⏳ 录制中 ${Math.round(progress * 100)}%`;
@@ -776,6 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Video recording failed:', err);
       btn.textContent = '❌ 导出失败';
     } finally {
+      avatar.setRecordingBackground(null);
       setTimeout(() => {
         btn.disabled = false;
         btn.textContent = origText;
@@ -1032,9 +1041,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnStudioExportPNG) {
     btnStudioExportPNG.addEventListener('click', () => {
       soundFx.pop(900, 0.08);
-      const dataUrl = avatar.exportPNG();
+      const currentTheme = root.getAttribute('data-theme') || avatar.theme || 'dark';
+      const dataUrl = avatar.exportPNG(currentTheme);
       const link = document.createElement('a');
-      link.download = `custom-avatar-${Date.now()}.png`;
+      link.download = `kuroblob-avatar-${Date.now()}.png`;
       link.href = dataUrl;
       link.click();
     });
