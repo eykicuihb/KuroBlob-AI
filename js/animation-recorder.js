@@ -1,6 +1,7 @@
 /**
  * KuroBlob AI - High-Resolution 60 FPS Animated Exporter
- * Captures 3-second looping WebM animations directly from Canvas stream.
+ * Captures 3-second looping MP4 or WebM animations directly from Canvas stream.
+ * Automatically prioritizes H.264/MP4 for optimal Twitter/X, WeChat, Discord, and iOS compatibility.
  */
 
 export class AnimationRecorder {
@@ -9,23 +10,64 @@ export class AnimationRecorder {
   }
 
   /**
+   * Determine best supported MIME type and file extension
+   */
+  getBestMimeType(preferred = 'auto') {
+    if (typeof MediaRecorder === 'undefined') return { mimeType: 'video/webm', ext: 'webm' };
+
+    const mp4Types = [
+      'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+      'video/mp4;codecs=avc1',
+      'video/mp4'
+    ];
+    const webmTypes = [
+      'video/webm;codecs=vp9',
+      'video/webm;codecs=vp8',
+      'video/webm'
+    ];
+
+    if (preferred === 'mp4') {
+      for (const t of mp4Types) {
+        if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, ext: 'mp4' };
+      }
+      for (const t of webmTypes) {
+        if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, ext: 'webm' };
+      }
+    } else if (preferred === 'webm') {
+      for (const t of webmTypes) {
+        if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, ext: 'webm' };
+      }
+      for (const t of mp4Types) {
+        if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, ext: 'mp4' };
+      }
+    } else {
+      // 'auto': prioritize MP4 for superior social media compatibility (Twitter/X, iOS, WeChat)
+      for (const t of mp4Types) {
+        if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, ext: 'mp4' };
+      }
+      for (const t of webmTypes) {
+        if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, ext: 'webm' };
+      }
+    }
+
+    return { mimeType: 'video/webm', ext: 'webm' };
+  }
+
+  /**
    * Record canvas stream for a given duration
    */
-  async record(canvas, durationSeconds = 3, onProgress = null) {
+  async record(canvas, durationSeconds = 3, onProgress = null, preferredFormat = 'auto') {
     if (!canvas || this.isRecording) return;
     this.isRecording = true;
 
     return new Promise((resolve, reject) => {
       try {
         const stream = canvas.captureStream(60); // 60 FPS stream
-        let mimeType = 'video/webm;codecs=vp9';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'video/webm';
-        }
+        const { mimeType, ext } = this.getBestMimeType(preferredFormat);
 
         const recorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 5000000 // 5 Mbps High Quality
+          videoBitsPerSecond: 6000000 // 6 Mbps High Quality
         });
 
         const chunks = [];
@@ -41,7 +83,7 @@ export class AnimationRecorder {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `kuroblob_animated_${Date.now()}.webm`;
+          a.download = `kuroblob_animated_${Date.now()}.${ext}`;
           document.body.appendChild(a);
           a.click();
           setTimeout(() => {
@@ -49,7 +91,7 @@ export class AnimationRecorder {
             URL.revokeObjectURL(url);
           }, 1000);
 
-          resolve(blob);
+          resolve({ blob, ext, mimeType });
         };
 
         recorder.start();

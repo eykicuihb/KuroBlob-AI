@@ -42,6 +42,10 @@ export const translations = {
     lblLayerRings: '🪐 3D 轨道星环',
     lblLayerParticles: '💫 宇宙星尘流光',
     lblLayerCheeks: '🌸 萌系粉嫩腮红',
+    vaultTitle: '⭐ 我的专属表情包收藏库 (AI & 自定义)',
+    btnExportVault: '📤 导出配置',
+    btnImportVault: '📥 导入配置',
+    btnResetDefaults: '↺ 恢复默认',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -193,6 +197,10 @@ export const translations = {
     lblLayerRings: '🪐 3D Orbital Rings',
     lblLayerParticles: '💫 Cosmic Particles',
     lblLayerCheeks: '🌸 Soft Pink Cheeks',
+    vaultTitle: '⭐ My Custom Expression Vault (AI & Custom)',
+    btnExportVault: '📤 Export Pack',
+    btnImportVault: '📥 Import Pack',
+    btnResetDefaults: '↺ Reset Defaults',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',

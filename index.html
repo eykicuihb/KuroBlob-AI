@@ -139,8 +139,13 @@
 
           <!-- My Vault Custom Pack Section -->
           <div id="customEmotionsSection" style="margin-top: 14px; border-top: 1px dashed var(--bg-card-border); padding-top: 10px;">
-            <div class="controls-header" style="margin-bottom: 8px;">
-              <span class="control-label" style="color: #A855F7; font-weight: 600;">⭐ 我的专属表情包收藏库 (AI & 自定义)</span>
+            <div class="controls-header" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+              <span class="control-label" style="color: #A855F7; font-weight: 600;" data-i18n="vaultTitle">⭐ 我的专属表情包收藏库 (AI & 自定义)</span>
+              <div style="display: flex; gap: 6px;">
+                <button id="btnExportVaultJson" class="btn-action secondary" style="padding: 2px 8px; font-size: 0.72rem;" title="导出表情包为 JSON 文件" data-i18n="btnExportVault">📤 导出配置</button>
+                <button id="btnImportVaultJson" class="btn-action secondary" style="padding: 2px 8px; font-size: 0.72rem;" title="从 JSON 文件导入表情包" data-i18n="btnImportVault">📥 导入配置</button>
+                <input type="file" id="inputImportVaultFile" accept=".json,application/json" style="display: none;">
+              </div>
             </div>
             <div id="customEmotionsContainer" class="emotion-buttons"></div>
           </div>
@@ -197,11 +202,14 @@
 
       <!-- Right Panel B: Avatar Creator Studio Panel -->
       <section id="studioPanel" class="studio-panel hidden">
-        <div class="studio-header">
-          <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;" data-i18n="studioTitle">
-            🎨 Avatar 萌系自定义设计工坊
-          </h2>
-          <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="studioSubtitle">自定义属于你的 3D 动态萌宠角色</span>
+        <div class="studio-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;" data-i18n="studioTitle">
+              🎨 Avatar 萌系自定义设计工坊
+            </h2>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="studioSubtitle">自定义属于你的 3D 动态萌宠角色</span>
+          </div>
+          <button id="btnStudioResetDefaults" class="btn-action secondary" style="padding: 4px 10px; font-size: 0.75rem;" data-i18n="btnResetDefaults">↺ 恢复默认</button>
         </div>
 
         <div class="studio-body">

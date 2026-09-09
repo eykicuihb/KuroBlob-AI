@@ -10,6 +10,30 @@ export class ExpressionGenerator {
   }
 
   /**
+   * Static security validation for dynamic Canvas 2D JavaScript code
+   */
+  static sanitizeAndValidateCanvasCode(code) {
+    if (typeof code !== 'string' || !code.includes('ctx.')) return false;
+
+    // Disallow dangerous global tokens, DOM, storage, or network access
+    const blockedTokens = [
+      /\bwindow\b/, /\bdocument\b/, /\blocalStorage\b/, /\bsessionStorage\b/,
+      /\bfetch\b/, /\bXMLHttpRequest\b/, /\beval\b/, /\bFunction\b/,
+      /\bimportScripts\b/, /\bindexedDB\b/, /\bWebSocket\b/, /\bEventSource\b/,
+      /\bcookie\b/, /\blocation\b/, /\bnavigator\b/, /\balert\b/
+    ];
+
+    for (const pattern of blockedTokens) {
+      if (pattern.test(code)) {
+        console.warn('Blocked disallowed token in dynamic Canvas code:', pattern);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Generate expression from natural language prompt
    */
   async generate(prompt) {
@@ -55,8 +79,8 @@ Return ONLY a JSON object:
       }
     }
 
-    // 2. If LLM provided real, valid Canvas2D code (containing ctx. operations), test and use it
-    if (llmResult && typeof llmResult.drawAccessoryCode === 'string' && llmResult.drawAccessoryCode.includes('ctx.')) {
+    // 2. If LLM provided real, valid Canvas2D code, test and use it through security sandbox
+    if (llmResult && typeof llmResult.drawAccessoryCode === 'string' && ExpressionGenerator.sanitizeAndValidateCanvasCode(llmResult.drawAccessoryCode)) {
       try {
         const drawFn = new Function('ctx', 't', llmResult.drawAccessoryCode);
         drawFn({

@@ -160,6 +160,11 @@ export class AvatarRenderer {
 
   bindEvents() {
     window.addEventListener('resize', () => this.resize());
+    if (typeof ResizeObserver !== 'undefined' && this.canvas.parentElement) {
+      this.resizeObserver = new ResizeObserver(() => this.resize());
+      this.resizeObserver.observe(this.canvas.parentElement);
+    }
+    this.canvas.style.touchAction = 'none';
     
     this.isDragging = false;
     this.dragTarget = null; // 'EYES' | 'BODY'
@@ -280,6 +285,11 @@ export class AvatarRenderer {
           const intensity = Math.min(2.0, Math.max(0.6, Math.abs(maxOffset) / 35));
           soundFx.boing(intensity);
 
+          // 📳 Haptic Vibration feedback on mobile
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try { navigator.vibrate(Math.round(intensity * 18)); } catch (e) {}
+          }
+
           // Physical Pinch Overload Tracking
           const now = Date.now();
           if (!this.stretchHistory) this.stretchHistory = [];
@@ -289,6 +299,9 @@ export class AvatarRenderer {
 
           if (moved > 160 || totalRecent > 350) {
             this.stretchHistory = [];
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+              try { navigator.vibrate([30, 40, 30, 40, 60]); } catch (e) {}
+            }
             if (this.onPhysicalOverload) {
               this.onPhysicalOverload();
             }

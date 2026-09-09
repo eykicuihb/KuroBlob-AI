@@ -741,6 +741,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 📤 Expression Vault JSON Export / Import
+  const btnExportVaultJson = document.getElementById('btnExportVaultJson');
+  const btnImportVaultJson = document.getElementById('btnImportVaultJson');
+  const inputImportVaultFile = document.getElementById('inputImportVaultFile');
+
+  if (btnExportVaultJson) {
+    btnExportVaultJson.addEventListener('click', () => {
+      soundFx.pop(1000, 0.08);
+      expressionVault.exportVaultAsJson();
+    });
+  }
+
+  if (btnImportVaultJson && inputImportVaultFile) {
+    btnImportVaultJson.addEventListener('click', () => {
+      soundFx.pop(850, 0.06);
+      inputImportVaultFile.click();
+    });
+
+    inputImportVaultFile.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const res = expressionVault.importVaultFromJson(evt.target.result);
+        if (res.success) {
+          soundFx.pop(1100, 0.1);
+          renderVaultGrid();
+          btnImportVaultJson.textContent = `✅ 导入 ${res.count} 个!`;
+          setTimeout(() => {
+            btnImportVaultJson.textContent = i18n.t('btnImportVault');
+          }, 2000);
+        } else {
+          soundFx.pop(300, 0.1);
+          btnImportVaultJson.textContent = '❌ 导入失败';
+          setTimeout(() => {
+            btnImportVaultJson.textContent = i18n.t('btnImportVault');
+          }, 2000);
+        }
+        inputImportVaultFile.value = '';
+      };
+      reader.readAsText(file);
+    });
+  }
+
   const handleVideoExport = async (btn) => {
     if (animationRecorder.isRecording) return;
     soundFx.pop(700, 0.08);
@@ -756,11 +800,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      await animationRecorder.record(canvas, 3, (progress) => {
+      const result = await animationRecorder.record(canvas, 3, (progress) => {
         btn.textContent = `⏳ 录制中 ${Math.round(progress * 100)}%`;
-      });
+      }, 'auto');
       soundFx.pop(1200, 0.12);
-      btn.textContent = '✅ 导出成功!';
+      const extName = result?.ext ? result.ext.toUpperCase() : 'MP4';
+      btn.textContent = `✅ 已导出 ${extName}!`;
     } catch (err) {
       console.error('Video recording failed:', err);
       btn.textContent = '❌ 导出失败';
@@ -1087,6 +1132,53 @@ document.addEventListener('DOMContentLoaded', () => {
     chkParticles.addEventListener('change', (e) => {
       soundFx.pop(750, 0.04);
       avatar.updateStudioConfig({ showParticles: e.target.checked });
+    });
+  }
+
+  // ↺ Studio Reset to Baseline Defaults
+  const btnStudioResetDefaults = document.getElementById('btnStudioResetDefaults');
+  if (btnStudioResetDefaults) {
+    btnStudioResetDefaults.addEventListener('click', () => {
+      soundFx.pop(750, 0.08);
+      // Reset chips
+      studioChips.forEach(c => c.classList.toggle('active', c.dataset.shape === 'BLOB'));
+      studioEyeChips.forEach(c => c.classList.toggle('active', c.dataset.eyestyle === 'PILL'));
+
+      // Reset values
+      if (sliderStiffness) { sliderStiffness.value = 0.12; if (valStiffness) valStiffness.textContent = '0.12'; avatar.springStiffness = 0.12; }
+      if (sliderEyeW) { sliderEyeW.value = 16; if (valEyeW) valEyeW.textContent = '16px'; }
+      if (sliderEyeH) { sliderEyeH.value = 38; if (valEyeH) valEyeH.textContent = '38px'; }
+      if (sliderEyeSpacing) { sliderEyeSpacing.value = 28; if (valEyeSpacing) valEyeSpacing.textContent = '28px'; }
+      if (sliderEyeTilt) { sliderEyeTilt.value = 0; if (valEyeTilt) valEyeTilt.textContent = '0°'; }
+      if (sliderEyePosX) { sliderEyePosX.value = 0; if (valEyePosX) valEyePosX.textContent = '0px'; }
+      if (sliderEyePosY) { sliderEyePosY.value = 0; if (valEyePosY) valEyePosY.textContent = '0px'; }
+      if (selectHeadAcc) selectHeadAcc.value = 'NONE';
+      if (selectAuraAcc) selectAuraAcc.value = 'NONE';
+      if (chkCheeks) chkCheeks.checked = false;
+      if (chkRings) chkRings.checked = false;
+      if (chkParticles) chkParticles.checked = false;
+
+      avatar.updateStudioConfig({
+        shape: 'BLOB',
+        eyeStyle: 'PILL',
+        eyeWidth: 16,
+        eyeHeight: 38,
+        eyeSpacing: 28,
+        eyeTilt: 0,
+        eyeRotation: 0,
+        eyePosX: 0,
+        eyePosY: 0,
+        headAccessory: 'NONE',
+        auraAccessory: 'NONE',
+        showCheeks: false,
+        showRings: false,
+        showParticles: false
+      });
+      avatar.setEmotion('BLOB');
+      btnStudioResetDefaults.textContent = '✅ 已重置!';
+      setTimeout(() => {
+        btnStudioResetDefaults.textContent = i18n.t('btnResetDefaults');
+      }, 1500);
     });
   }
 

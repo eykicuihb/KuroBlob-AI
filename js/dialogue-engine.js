@@ -257,7 +257,7 @@ export class DialogueEngine {
     for (let i = 0; i < responseText.length; i++) {
       aiMessage.text += responseText[i];
       if (i % 2 === 0) {
-        soundFx.playMascotChatter(responseText[i], i);
+        soundFx.playMascotChatter(responseText[i], i, finalAIEmotion);
         this.avatar.setFaceTracking(true, { mouthOpen: (Math.sin(i * 0.85) * 0.35 + 0.35) });
       }
       if (this.onMessageUpdate) this.onMessageUpdate(this.history, aiAnalysis);

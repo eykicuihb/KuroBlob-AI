@@ -210,10 +210,10 @@ export class SoundFX {
   }
 
   /**
-   * 🗣️ Mascot Chatter Sound: Procedural Animal-Crossing / Mascot vocal synth chirps
-   * Replaces TTS with cute, organic procedural synth speech blips.
+   * 🗣️ Mood-driven Mascot Chatter Sound: Procedural Animal-Crossing / Mascot vocal synth chirps
+   * Replaces TTS with cute, organic procedural synth speech blips, dynamically tuned to avatar emotions.
    */
-  playMascotChatter(char = 'a', index = 0) {
+  playMascotChatter(char = 'a', index = 0, emotion = 'IDLE') {
     if (this.muted) return;
     this.ensureContext();
     if (!this.ctx) return;
@@ -224,15 +224,43 @@ export class SoundFX {
     const gain = this.ctx.createGain();
 
     const code = char.charCodeAt(0) || 65;
-    const basePitches = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
-    const pitch = basePitches[code % basePitches.length] * (1.0 + (index % 3) * 0.08);
 
-    osc.type = (code % 2 === 0) ? 'sine' : 'triangle';
+    // Mood-specific frequency scales & wave types
+    let basePitches = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50]; // Standard C5 - C6
+    let waveType = (code % 2 === 0) ? 'sine' : 'triangle';
+    let pitchMod = 1.0;
+
+    if (emotion === 'HAPPY' || emotion === 'PARTY' || emotion === 'HYPED' || emotion === 'LAUGHING') {
+      basePitches = [659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51]; // Cheerful High Pentatonic
+      pitchMod = 1.12;
+      waveType = 'triangle';
+    } else if (emotion === 'LOVE' || emotion === 'SHY' || emotion === 'BOBA') {
+      basePitches = [587.33, 659.25, 740.00, 880.00, 987.77]; // Sweet Lydian / Soft
+      pitchMod = 1.05;
+      waveType = 'sine';
+    } else if (emotion === 'SAD' || emotion === 'CRYING' || emotion === 'SLEEPING') {
+      basePitches = [329.63, 392.00, 440.00, 493.88, 523.25]; // Soft Gentle Minor
+      pitchMod = 0.85;
+      waveType = 'sine';
+    } else if (emotion === 'ANGRY' || emotion === 'DEVIL') {
+      basePitches = [349.23, 415.30, 466.16, 554.37, 622.25]; // Low Staccato
+      pitchMod = 0.9;
+      waveType = 'sawtooth';
+    } else if (emotion === 'THINKING' || emotion === 'FOCUSED') {
+      basePitches = [440.00, 523.25, 659.25, 783.99]; // Clean Quartz Tone
+      pitchMod = 1.0;
+      waveType = 'sine';
+    }
+
+    const basePitch = basePitches[code % basePitches.length];
+    const pitch = basePitch * pitchMod * (1.0 + (index % 3) * 0.06);
+
+    osc.type = waveType;
     osc.frequency.setValueAtTime(pitch, now);
     osc.frequency.exponentialRampToValueAtTime(pitch * 1.15, now + duration * 0.4);
-    osc.frequency.exponentialRampToValueAtTime(pitch * 0.85, now + duration);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 0.88, now + duration);
 
-    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.setValueAtTime(waveType === 'sawtooth' ? 0.09 : 0.18, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
     osc.connect(gain);

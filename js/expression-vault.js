@@ -121,4 +121,47 @@ export class ExpressionVault {
       container.appendChild(btn);
     });
   }
+
+  /**
+   * Export all vault expressions as a downloadable JSON file
+   */
+  exportVaultAsJson() {
+    const jsonStr = JSON.stringify(this.vault, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kuroblob_vault_pack_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1000);
+    return jsonStr;
+  }
+
+  /**
+   * Import expressions from JSON string, merging with existing items
+   */
+  importVaultFromJson(jsonString) {
+    try {
+      const items = JSON.parse(jsonString);
+      if (!Array.isArray(items)) throw new Error('Invalid vault JSON format: expected array');
+
+      let importedCount = 0;
+      items.forEach(item => {
+        if (item && item.id) {
+          this.vault = this.vault.filter(e => e.id !== item.id);
+          this.vault.unshift(item);
+          importedCount++;
+        }
+      });
+      this.saveToStorage();
+      return { success: true, count: importedCount };
+    } catch (err) {
+      console.error('Failed to import vault JSON:', err);
+      return { success: false, error: err.message };
+    }
+  }
 }
