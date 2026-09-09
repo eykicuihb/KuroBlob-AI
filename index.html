@@ -38,6 +38,9 @@
         <button id="themeToggle" class="btn-icon" title="Toggle Theme">
           <span id="themeIcon">🌙</span> <span id="themeText" data-i18n="themeDark">深色模式</span>
         </button>
+        <button id="btnStateBoard" class="btn-icon" title="View 60+ Expressions State Board / 查看 60+ 表情全景矩阵展板 (#planche)">
+          <span>🧩</span> <span data-i18n="stateBoardTitle">全景展板</span>
+        </button>
         <button id="exportCodeBtn" class="btn-icon">
           <span data-i18n="exportCode">⚡ 导出嵌入代码</span>
         </button>
@@ -491,6 +494,24 @@
       <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
         <button id="btnCancelAIModal" class="btn-action secondary" data-i18n="btnCancel">取消</button>
         <button id="btnSaveAIModal" class="btn-action primary" data-i18n="btnSaveAI">💾 保存并生效</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- State Board / Gallery Modal (#planche) -->
+  <div id="stateBoardModal" class="modal-overlay">
+    <div class="modal-content state-board-modal" style="max-width: 960px; width: 92vw; max-height: 86vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-card-border); padding-bottom: 10px;">
+        <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.15rem;">
+          <span>🧩</span> <span data-i18n="stateBoardModalTitle">60+ 表情全景矩阵展板 (State Board)</span>
+        </h3>
+        <button id="closeStateBoardBtn" class="btn-close">&times;</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin: 10px 0;" data-i18n="stateBoardModalSubtitle">
+        参考 x.ai (#planche) 架构设计，一览无余地查验所有 60+ 种动态形态与 3D 深度视角，点击任意项可实时上身！
+      </p>
+      <div id="stateBoardGrid" class="state-board-grid" style="overflow-y: auto; flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 6px 2px;">
+        <!-- Injected dynamically by JS -->
       </div>
     </div>
   </div>

@@ -1224,6 +1224,79 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 🧩 60+ Expressions State Board Modal (#planche)
+  const btnStateBoard = document.getElementById('btnStateBoard');
+  const stateBoardModal = document.getElementById('stateBoardModal');
+  const closeStateBoardBtn = document.getElementById('closeStateBoardBtn');
+  const stateBoardGrid = document.getElementById('stateBoardGrid');
+
+  const openStateBoard = () => {
+    soundFx.pop(800, 0.06);
+    if (stateBoardGrid && stateBoardGrid.children.length === 0) {
+      // Collect all standard emotion buttons
+      const emotionBtns = document.querySelectorAll('.manual-controls .btn-emotion:not(.btn-vault-custom)');
+      emotionBtns.forEach(btn => {
+        const emoId = btn.dataset.emotion;
+        const text = btn.textContent.trim();
+        const card = document.createElement('button');
+        card.className = 'state-board-card';
+        card.style.cssText = `
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 12px 8px; border-radius: 12px; border: 1px solid var(--bg-card-border);
+          background: var(--bg-hover); cursor: pointer; transition: all 0.2s ease;
+          gap: 6px; text-align: center;
+        `;
+        card.innerHTML = `
+          <span style="font-size: 1.6rem; pointer-events: none;">${text.split(' ')[0]}</span>
+          <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary); pointer-events: none;">${text.split(' ').slice(1).join(' ')}</span>
+          <span style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace; pointer-events: none;">${emoId}</span>
+        `;
+        card.addEventListener('mouseenter', () => {
+          card.style.borderColor = 'var(--accent-color)';
+          card.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.borderColor = 'var(--bg-card-border)';
+          card.style.transform = 'translateY(0)';
+        });
+        card.addEventListener('click', () => {
+          soundFx.pop(950, 0.08);
+          avatar.setEmotion(emoId);
+          const emojiEl = document.getElementById('emotionEmoji');
+          const nameEl = document.getElementById('emotionName');
+          if (emojiEl) emojiEl.textContent = text.split(' ')[0];
+          if (nameEl) nameEl.textContent = emoId;
+          stateBoardModal?.classList.remove('active');
+        });
+        stateBoardGrid.appendChild(card);
+      });
+    }
+    stateBoardModal?.classList.add('active');
+  };
+
+  const closeStateBoard = () => {
+    soundFx.pop(600, 0.05);
+    stateBoardModal?.classList.remove('active');
+    if (window.location.hash === '#planche') {
+      history.replaceState(null, '', window.location.pathname);
+    }
+  };
+
+  if (btnStateBoard) btnStateBoard.addEventListener('click', openStateBoard);
+  if (closeStateBoardBtn) closeStateBoardBtn.addEventListener('click', closeStateBoard);
+  if (stateBoardModal) {
+    stateBoardModal.addEventListener('click', (e) => {
+      if (e.target === stateBoardModal) closeStateBoard();
+    });
+  }
+
+  if (window.location.hash === '#planche') {
+    openStateBoard();
+  }
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#planche') openStateBoard();
+  });
+
   function escapeHtml(str) {
     return str.replace(/[&<>"']/g, function(m) {
       return {

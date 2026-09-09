@@ -46,6 +46,9 @@ export const translations = {
     btnExportVault: '📤 导出配置',
     btnImportVault: '📥 导入配置',
     btnResetDefaults: '↺ 恢复默认',
+    stateBoardTitle: '全景展板',
+    stateBoardModalTitle: '60+ 表情全景矩阵展板 (State Board)',
+    stateBoardModalSubtitle: '参考 x.ai (#planche) 架构设计，一览无余地查验所有 60+ 种动态形态与 3D 深度视角，点击任意项可实时上身！',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -201,6 +204,9 @@ export const translations = {
     btnExportVault: '📤 Export Pack',
     btnImportVault: '📥 Import Pack',
     btnResetDefaults: '↺ Reset Defaults',
+    stateBoardTitle: 'State Board',
+    stateBoardModalTitle: '60+ Expressions State Board (#planche)',
+    stateBoardModalSubtitle: 'Inspired by x.ai (#planche) frozen board architecture, inspect all 60+ procedural morphs at a glance. Click any item to apply live!',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',

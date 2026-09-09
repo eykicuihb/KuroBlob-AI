@@ -459,6 +459,7 @@ export class AvatarRenderer {
     if (this.customPresets && this.customPresets[emotion]) {
       this.setStudioMode(true, this.customPresets[emotion]);
       this.targetEmotion = emotion;
+      this.triggerBlink(); // ⚡ Mask shape morphing with natural blink
       soundFx.emotionReaction(emotion);
       return;
     }
@@ -470,6 +471,7 @@ export class AvatarRenderer {
     if (this.currentEmotion === emotion && this.targetEmotion === emotion) return;
     this.targetEmotion = emotion;
     this.transitionProgress = 0;
+    this.triggerBlink(); // ⚡ Mask shape morphing with natural blink (x.ai morph-damping)
     soundFx.emotionReaction(emotion);
   }
 
@@ -2199,6 +2201,16 @@ export class AvatarRenderer {
     let rightH = currentHeight;
     let leftW = this.eyeWidth;
     let rightW = this.eyeWidth;
+
+    // 🌐 3D Spherical Orthographic Depth Compression (derived from x.ai reference by bloub):
+    // As gaze traverses the spherical curvature of the jelly body, the eye farther from the optical center
+    // undergoes natural orthographic compression down to ~0.69x width.
+    const gazeRatioX = Math.max(-1, Math.min(1, posX / Math.max(30, this.baseRadius * 0.75)));
+    if (gazeRatioX > 0.05) {
+      leftW *= (1.0 - gazeRatioX * 0.31);
+    } else if (gazeRatioX < -0.05) {
+      rightW *= (1.0 - Math.abs(gazeRatioX) * 0.31);
+    }
 
     if (this.studioMode) {
       leftW = this.customConfig.eyeWidth;
