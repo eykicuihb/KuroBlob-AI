@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
     creatorPanel?.classList.toggle('hidden', activeTab !== 'creator');
     timelinePanel?.classList.toggle('hidden', activeTab !== 'timeline');
 
-    if (activeTab === 'chat') {
+    if (activeTab === 'chat' || activeTab === 'timeline') {
       avatar.setStudioMode(false);
     } else {
       avatar.setStudioMode(true);

@@ -464,9 +464,8 @@ export class AvatarRenderer {
       return;
     }
 
-    if (this.studioMode) {
-      this.customConfig.shape = emotion;
-    }
+    // Setting a standard built-in emotion clears studioMode overrides so full procedural animations (weather, props, accessories) render!
+    this.studioMode = false;
 
     if (this.currentEmotion === emotion && this.targetEmotion === emotion) return;
     this.targetEmotion = emotion;
