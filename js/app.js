@@ -13,6 +13,7 @@ import { FaceTracker } from './face-tracker.js?v=2.4';
 import { ExpressionGenerator } from './expression-generator.js?v=2.4';
 import { ExpressionVault } from './expression-vault.js?v=2.4';
 import { AnimationRecorder } from './animation-recorder.js?v=2.4';
+import { TimelineSequencer } from './timeline-sequencer.js?v=2.4';
 
 document.addEventListener('DOMContentLoaded', () => {
   const i18n = new I18nManager();
@@ -580,13 +581,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Navigation Mode Tab Switching (3-Way: Chat / Studio / AI Creator)
+  // Navigation Mode Tab Switching (4-Way: Chat / Studio / AI Creator / Timeline)
   const tabChat = document.getElementById('tabChat');
   const tabStudio = document.getElementById('tabStudio');
   const tabCreator = document.getElementById('tabCreator');
+  const tabTimeline = document.getElementById('tabTimeline');
   const dialoguePanel = document.getElementById('dialoguePanel');
   const studioPanel = document.getElementById('studioPanel');
   const creatorPanel = document.getElementById('creatorPanel');
+  const timelinePanel = document.getElementById('timelinePanel');
 
   const switchTab = (activeTab) => {
     soundFx.pop(750, 0.05);
@@ -595,10 +598,12 @@ document.addEventListener('DOMContentLoaded', () => {
     tabChat?.classList.toggle('active', activeTab === 'chat');
     tabStudio?.classList.toggle('active', activeTab === 'studio');
     tabCreator?.classList.toggle('active', activeTab === 'creator');
+    tabTimeline?.classList.toggle('active', activeTab === 'timeline');
 
     dialoguePanel?.classList.toggle('hidden', activeTab !== 'chat');
     studioPanel?.classList.toggle('hidden', activeTab !== 'studio');
     creatorPanel?.classList.toggle('hidden', activeTab !== 'creator');
+    timelinePanel?.classList.toggle('hidden', activeTab !== 'timeline');
 
     if (activeTab === 'chat') {
       avatar.setStudioMode(false);
@@ -610,6 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tabChat) tabChat.addEventListener('click', () => switchTab('chat'));
   if (tabStudio) tabStudio.addEventListener('click', () => switchTab('studio'));
   if (tabCreator) tabCreator.addEventListener('click', () => switchTab('creator'));
+  if (tabTimeline) tabTimeline.addEventListener('click', () => switchTab('timeline'));
 
   // 🪄 AI Expression Creator Studio Engine (Powered by kuroblob-expression-creator Skill)
   const expressionGenerator = new ExpressionGenerator(llmProvider);
@@ -1290,11 +1296,284 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 🎞️ Animation Timeline & Montage Sequencer Studio
+  const timelineSequencer = new TimelineSequencer(avatar, soundFx);
+  const timelineClipsTrack = document.getElementById('timelineClipsTrack');
+  const lblTimelineTotalDuration = document.getElementById('lblTimelineTotalDuration');
+  const btnPlayTimeline = document.getElementById('btnPlayTimeline');
+  const playTimelineIcon = document.getElementById('playTimelineIcon');
+  const playTimelineText = document.getElementById('playTimelineText');
+  const btnRecordTimeline = document.getElementById('btnRecordTimeline');
+  const btnClearTimeline = document.getElementById('btnClearTimeline');
+  const selectStoryPreset = document.getElementById('selectStoryPreset');
+  const selectAddEmotion = document.getElementById('selectAddEmotion');
+  const inputAddDuration = document.getElementById('inputAddDuration');
+  const btnAddTimelineClip = document.getElementById('btnAddTimelineClip');
+
+  // Populate selectAddEmotion from all standard emotions
+  const populateTimelineEmotionDropdown = () => {
+    if (!selectAddEmotion) return;
+    selectAddEmotion.innerHTML = '';
+    const emotionBtns = document.querySelectorAll('.manual-controls .btn-emotion:not(.btn-vault-custom)');
+    emotionBtns.forEach(btn => {
+      const emoId = btn.getAttribute('data-emotion');
+      if (!emoId) return;
+      const text = btn.textContent.trim();
+      const opt = document.createElement('option');
+      opt.value = emoId;
+      opt.textContent = text;
+      selectAddEmotion.appendChild(opt);
+    });
+  };
+  populateTimelineEmotionDropdown();
+
+  const updateTotalDurationDisplay = () => {
+    if (lblTimelineTotalDuration) {
+      lblTimelineTotalDuration.textContent = `${timelineSequencer.getTotalDuration()}s`;
+    }
+  };
+
+  const renderTimelineClips = () => {
+    if (!timelineClipsTrack) return;
+    timelineClipsTrack.innerHTML = '';
+
+    if (timelineSequencer.clips.length === 0) {
+      const emptyHint = document.createElement('div');
+      emptyHint.style.cssText = 'padding: 30px; text-align: center; color: var(--text-muted); font-size: 0.85rem; width: 100%;';
+      emptyHint.textContent = i18n.lang === 'zh-CN' 
+        ? '时间线为空，请在上方选择动作点击「添加动作片段」，或直接选择一个剧情模板 👆' 
+        : 'Timeline is empty. Add a clip above or choose a story preset 👆';
+      timelineClipsTrack.appendChild(emptyHint);
+      updateTotalDurationDisplay();
+      return;
+    }
+
+    timelineSequencer.clips.forEach((clip, index) => {
+      const card = document.createElement('div');
+      card.className = `timeline-clip-card ${index === timelineSequencer.currentIndex && timelineSequencer.isPlaying ? 'active' : ''}`;
+      card.dataset.index = index;
+
+      card.innerHTML = `
+        <div class="timeline-clip-header">
+          <span class="timeline-clip-index">#${index + 1}</span>
+          <span class="timeline-clip-del" title="${i18n.lang === 'zh-CN' ? '删除此片段' : 'Delete'}">✕</span>
+        </div>
+        <div class="timeline-clip-body">
+          <div class="timeline-clip-emoji">${clip.emoji || '✨'}</div>
+          <div class="timeline-clip-title">${clip.nameZh || clip.emotion}</div>
+          <div class="timeline-clip-id">${clip.emotion}</div>
+        </div>
+        <div class="timeline-clip-footer">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-muted);">
+            <span>${i18n.lang === 'zh-CN' ? '时长:' : 'Dur:'}</span>
+            <span class="clip-duration-val">${clip.duration}s</span>
+          </div>
+          <input type="range" class="clip-duration-slider" min="0.4" max="6.0" step="0.1" value="${clip.duration}" style="width: 100%; accent-color: #6366F1; cursor: pointer;">
+          <div class="timeline-clip-nav">
+            <button class="btn-clip-move move-left" ${index === 0 ? 'disabled style="opacity:0.3;cursor:default;"' : ''} title="${i18n.lang === 'zh-CN' ? '前移' : 'Move Left'}">◀</button>
+            <button class="btn-clip-move move-right" ${index === timelineSequencer.clips.length - 1 ? 'disabled style="opacity:0.3;cursor:default;"' : ''} title="${i18n.lang === 'zh-CN' ? '后移' : 'Move Right'}">▶</button>
+          </div>
+        </div>
+      `;
+
+      // Click card to test emotion immediately
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.timeline-clip-del') || e.target.closest('.clip-duration-slider') || e.target.closest('.btn-clip-move')) {
+          return;
+        }
+        soundFx.pop(800, 0.05);
+        avatar.setEmotion(clip.emotion);
+        timelineSequencer.currentIndex = index;
+        highlightActiveClip(index);
+      });
+
+      // Delete clip
+      const btnDel = card.querySelector('.timeline-clip-del');
+      btnDel?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundFx.pop(500, 0.05);
+        timelineSequencer.removeClip(index);
+        renderTimelineClips();
+      });
+
+      // Slider duration
+      const slider = card.querySelector('.clip-duration-slider');
+      const valLabel = card.querySelector('.clip-duration-val');
+      slider?.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        valLabel.textContent = `${val}s`;
+        timelineSequencer.updateClipDuration(index, val);
+        updateTotalDurationDisplay();
+      });
+
+      // Move left
+      const btnLeft = card.querySelector('.move-left');
+      btnLeft?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundFx.pop(700, 0.05);
+        timelineSequencer.moveClip(index, -1);
+        renderTimelineClips();
+      });
+
+      // Move right
+      const btnRight = card.querySelector('.move-right');
+      btnRight?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundFx.pop(700, 0.05);
+        timelineSequencer.moveClip(index, 1);
+        renderTimelineClips();
+      });
+
+      timelineClipsTrack.appendChild(card);
+    });
+
+    updateTotalDurationDisplay();
+  };
+
+  const highlightActiveClip = (idx) => {
+    if (!timelineClipsTrack) return;
+    const cards = timelineClipsTrack.querySelectorAll('.timeline-clip-card');
+    cards.forEach((c, i) => {
+      if (i === idx) {
+        c.classList.add('active');
+        c.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      } else {
+        c.classList.remove('active');
+      }
+    });
+  };
+
+  timelineSequencer.onStepChange = (currentIndex) => {
+    highlightActiveClip(currentIndex);
+  };
+
+  timelineSequencer.onPlayStateChange = (isPlaying) => {
+    if (playTimelineIcon && playTimelineText) {
+      if (isPlaying) {
+        playTimelineIcon.textContent = '⏸️';
+        playTimelineText.textContent = i18n.lang === 'zh-CN' ? '暂停播放' : 'Pause';
+        btnPlayTimeline?.classList.add('active');
+      } else {
+        playTimelineIcon.textContent = '▶️';
+        playTimelineText.textContent = i18n.lang === 'zh-CN' ? '播放时间线' : 'Play Timeline';
+        btnPlayTimeline?.classList.remove('active');
+      }
+    }
+    if (!isPlaying) {
+      const cards = timelineClipsTrack?.querySelectorAll('.timeline-clip-card');
+      cards?.forEach(c => c.classList.remove('active'));
+    }
+  };
+
+  // Play / Pause toggle
+  if (btnPlayTimeline) {
+    btnPlayTimeline.addEventListener('click', () => {
+      soundFx.pop(750, 0.06);
+      if (timelineSequencer.isPlaying) {
+        timelineSequencer.pause();
+      } else {
+        timelineSequencer.play();
+      }
+    });
+  }
+
+  // Clear timeline
+  if (btnClearTimeline) {
+    btnClearTimeline.addEventListener('click', () => {
+      soundFx.pop(450, 0.08);
+      timelineSequencer.stop();
+      timelineSequencer.clips = [];
+      renderTimelineClips();
+    });
+  }
+
+  // Story Preset selection
+  if (selectStoryPreset) {
+    selectStoryPreset.addEventListener('change', (e) => {
+      soundFx.pop(850, 0.08);
+      timelineSequencer.loadPreset(e.target.value);
+      renderTimelineClips();
+    });
+  }
+
+  // Add custom clip
+  if (btnAddTimelineClip) {
+    btnAddTimelineClip.addEventListener('click', () => {
+      if (!selectAddEmotion) return;
+      const emoId = selectAddEmotion.value;
+      const selectedOption = selectAddEmotion.options[selectAddEmotion.selectedIndex];
+      const optText = selectedOption ? selectedOption.textContent.trim() : emoId;
+      const emoji = optText.split(' ')[0] || '✨';
+      const nameZh = optText.split(' ').slice(1).join(' ') || emoId;
+      const dur = parseFloat(inputAddDuration?.value) || 1.5;
+
+      soundFx.pop(950, 0.08);
+      timelineSequencer.addClip(emoId, emoji, nameZh, dur);
+      renderTimelineClips();
+
+      if (timelineClipsTrack) {
+        setTimeout(() => {
+          timelineClipsTrack.scrollLeft = timelineClipsTrack.scrollWidth;
+        }, 50);
+      }
+    });
+  }
+
+  // Video Export of Timeline to MP4
+  const handleTimelineVideoExport = async (btn) => {
+    if (animationRecorder.isRecording) return;
+    if (timelineSequencer.clips.length === 0) return;
+
+    soundFx.pop(700, 0.08);
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> <span>正在准备整轨录制...</span>';
+
+    const currentTheme = root.getAttribute('data-theme') || avatar.theme || 'dark';
+    if (!avatar.greenScreen) {
+      avatar.setRecordingBackground(currentTheme === 'light' ? '#FFFFFF' : '#0F172A');
+    }
+
+    const totalDur = timelineSequencer.getTotalDuration();
+    timelineSequencer.stop();
+    timelineSequencer.loop = false;
+    timelineSequencer.play();
+
+    try {
+      const result = await animationRecorder.record(canvas, totalDur, (progress) => {
+        btn.innerHTML = `<span>⏳</span> <span>录制中 ${Math.round(progress * 100)}%</span>`;
+      }, 'auto');
+      soundFx.pop(1200, 0.12);
+      const extName = result?.ext ? result.ext.toUpperCase() : 'MP4';
+      btn.innerHTML = `<span>✅</span> <span>已导出整轨 ${extName}!</span>`;
+    } catch (err) {
+      console.error('Timeline video recording failed:', err);
+      btn.innerHTML = '<span>❌</span> <span>导出失败</span>';
+    } finally {
+      timelineSequencer.loop = true;
+      avatar.setRecordingBackground(null);
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }, 2000);
+    }
+  };
+
+  if (btnRecordTimeline) {
+    btnRecordTimeline.addEventListener('click', () => handleTimelineVideoExport(btnRecordTimeline));
+  }
+
+  // Initial render of timeline clips
+  renderTimelineClips();
+
   if (window.location.hash === '#planche') {
     openStateBoard();
+  } else if (window.location.hash === '#timeline') {
+    switchTab('timeline');
   }
   window.addEventListener('hashchange', () => {
     if (window.location.hash === '#planche') openStateBoard();
+    else if (window.location.hash === '#timeline') switchTab('timeline');
   });
 
   function escapeHtml(str) {

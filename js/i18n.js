@@ -49,6 +49,16 @@ export const translations = {
     stateBoardTitle: '全景展板',
     stateBoardModalTitle: '60+ 表情全景矩阵展板 (State Board)',
     stateBoardModalSubtitle: '参考 x.ai (#planche) 架构设计，一览无余地查验所有 60+ 种动态形态与 3D 深度视角，点击任意项可实时上身！',
+    tabTimeline: '🎞️ 动画时间线编排器',
+    timelineTitle: '🎞️ 动画时间线与剧情编排工作台',
+    timelineSubtitle: '将多个表情自由拼接成连贯动作序列，调节各动作时长并循环播放，支持一键录制导出整段 MP4 剧情！',
+    lblTotalDuration: '总播放时长:',
+    btnPlayTimeline: '▶️ 播放时间线',
+    btnPauseTimeline: '⏸️ 暂停播放',
+    btnRecordTimeline: '🎬 导出整轨剧情 MP4',
+    btnClearTimeline: '🗑️ 清空',
+    lblStoryPresets: '剧情模板:',
+    btnAddClip: '➕ 添加动作片段',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar 萌系自定义设计工坊',
@@ -207,6 +217,16 @@ export const translations = {
     stateBoardTitle: 'State Board',
     stateBoardModalTitle: '60+ Expressions State Board (#planche)',
     stateBoardModalSubtitle: 'Inspired by x.ai (#planche) frozen board architecture, inspect all 60+ procedural morphs at a glance. Click any item to apply live!',
+    tabTimeline: '🎞️ Animation Timeline',
+    timelineTitle: '🎞️ Animation Timeline & Story Sequencer',
+    timelineSubtitle: 'Chain multiple expressions into seamless narrative sequences, adjust hold durations, and export full story animations to MP4!',
+    lblTotalDuration: 'Total Duration:',
+    btnPlayTimeline: '▶️ Play Sequence',
+    btnPauseTimeline: '⏸️ Pause',
+    btnRecordTimeline: '🎬 Record Full Sequence (MP4)',
+    btnClearTimeline: '🗑️ Clear Track',
+    lblStoryPresets: 'Story Preset:',
+    btnAddClip: '➕ Add Clip',
     
     // Studio Section Titles & Labels
     studioTitle: '🎨 Avatar Creator Studio',

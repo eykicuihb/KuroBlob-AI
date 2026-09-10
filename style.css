@@ -886,3 +886,146 @@ canvas:active {
   color: #FFFFFF;
   border-color: transparent;
 }
+
+/* ==========================================================================
+   Animation Timeline & Montage Sequencer Styling
+   ========================================================================== */
+.timeline-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.timeline-panel.hidden {
+  display: none !important;
+}
+
+.timeline-clips-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 4px 16px 4px;
+  scroll-behavior: smooth;
+}
+
+.timeline-clips-track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.timeline-clips-track::-webkit-scrollbar-thumb {
+  background: var(--bg-card-border);
+  border-radius: 4px;
+}
+
+.timeline-clip-card {
+  min-width: 140px;
+  max-width: 160px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.timeline-clip-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.timeline-clip-card.active {
+  border-color: #6366F1;
+  background: rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4), 0 8px 20px rgba(99, 102, 241, 0.2);
+  transform: scale(1.03) translateY(-3px);
+}
+
+.timeline-clip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-clip-index {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #6366F1;
+  background: rgba(99, 102, 241, 0.15);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.timeline-clip-del {
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 0.8rem;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.timeline-clip-del:hover {
+  opacity: 1;
+  color: #EF4444;
+}
+
+.timeline-clip-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.timeline-clip-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.timeline-clip-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.timeline-clip-id {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.timeline-clip-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  border-top: 1px dashed var(--bg-card-border);
+  padding-top: 6px;
+}
+
+.timeline-clip-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-clip-move {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-clip-move:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
