@@ -2196,26 +2196,35 @@ export class AvatarRenderer {
     // Determine left and right eye tilt & size per emotion or studio config
     let leftTilt = -this.eyeTilt;
     let rightTilt = this.eyeTilt;
-    let leftH = currentHeight;
-    let rightH = currentHeight;
-    let leftW = this.eyeWidth;
-    let rightW = this.eyeWidth;
+    // Base eye dimensions from mode
+    let baseW = this.studioMode ? this.customConfig.eyeWidth : this.eyeWidth;
+    let baseH = this.studioMode ? this.customConfig.eyeHeight : currentHeight;
+    let leftW = baseW;
+    let rightW = baseW;
+    let leftH = baseH;
+    let rightH = baseH;
 
-    // 🌐 3D Spherical Orthographic Depth Compression (derived from x.ai reference by bloub):
-    // As gaze traverses the spherical curvature of the jelly body, the eye farther from the optical center
-    // undergoes natural orthographic compression down to ~0.69x width.
-    const gazeRatioX = Math.max(-1, Math.min(1, posX / Math.max(30, this.baseRadius * 0.75)));
-    if (gazeRatioX > 0.05) {
-      leftW *= (1.0 - gazeRatioX * 0.31);
-    } else if (gazeRatioX < -0.05) {
-      rightW *= (1.0 - Math.abs(gazeRatioX) * 0.31);
-    }
+    // 🌐 True 3D Spherical Orthographic Depth Compression (Real Video Measurements):
+    // For a sphere of radius R, surface normal angle theta causes orthographic foreshortening cos(theta) = sqrt(1 - (x/R)^2).
+    // As gaze traverses the sphere, the outer eye (closer to the curved silhouette edge) foreshortens down to ~0.69x width.
+    const rSphere = Math.max(40, this.baseRadius * 0.85);
+    const leftDistRatio = Math.max(-1, Math.min(1, leftEyeX / rSphere));
+    const rightDistRatio = Math.max(-1, Math.min(1, rightEyeX / rSphere));
+
+    // Calculate individual eye foreshortening factors: s = sqrt(1 - (x/R)^2) with 0.69x floor
+    const leftCompress = Math.max(0.69, Math.sqrt(Math.max(0.476, 1 - leftDistRatio * leftDistRatio)));
+    const rightCompress = Math.max(0.69, Math.sqrt(Math.max(0.476, 1 - rightDistRatio * rightDistRatio)));
+
+    leftW *= leftCompress;
+    rightW *= rightCompress;
+
+    // Slight spherical curvature latitude elevation: y drops slightly along the sphere surface
+    const leftArcDrop = (1 - leftCompress) * 6;
+    const rightArcDrop = (1 - rightCompress) * 6;
+    let leftEyeY = eyeY + leftArcDrop;
+    let rightEyeY = eyeY + rightArcDrop;
 
     if (this.studioMode) {
-      leftW = this.customConfig.eyeWidth;
-      rightW = this.customConfig.eyeWidth;
-      leftH = this.customConfig.eyeHeight;
-      rightH = this.customConfig.eyeHeight;
       const baseTilt = (this.customConfig.eyeTilt * Math.PI) / 180;
       const combinedRotation = ((this.customConfig.eyeRotation || 0) * Math.PI) / 180;
       
@@ -2225,19 +2234,19 @@ export class AvatarRenderer {
       const style = this.customConfig.eyeStyle;
       
       if (style === 'CRESCENT') {
-        this.drawCrescentEye(leftEyeX, eyeY, leftW, leftH, leftTilt - 0.28);
-        this.drawCrescentEye(rightEyeX, eyeY, rightW, rightH, rightTilt + 0.28);
+        this.drawCrescentEye(leftEyeX, leftEyeY, leftW, leftH, leftTilt - 0.28);
+        this.drawCrescentEye(rightEyeX, rightEyeY, rightW, rightH, rightTilt + 0.28);
         return;
       } else if (style === 'STERN') {
         leftTilt += 0.45;
         rightTilt -= 0.45;
       } else if (style === 'CIRCLE') {
-        this.drawCircleEye(leftEyeX, eyeY, Math.max(leftW, leftH), leftTilt);
-        this.drawCircleEye(rightEyeX, eyeY, Math.max(rightW, rightH), rightTilt);
+        this.drawCircleEye(leftEyeX, leftEyeY, Math.max(leftW, leftH), leftTilt);
+        this.drawCircleEye(rightEyeX, rightEyeY, Math.max(rightW, rightH), rightTilt);
         return;
       } else if (style === 'STAR') {
-        this.drawStarEye(leftEyeX, eyeY, Math.max(leftW, 16));
-        this.drawStarEye(rightEyeX, eyeY, Math.max(rightW, 16));
+        this.drawStarEye(leftEyeX, leftEyeY, Math.max(leftW, 16));
+        this.drawStarEye(rightEyeX, rightEyeY, Math.max(rightW, 16));
         return;
       }
     } else {
@@ -2262,11 +2271,11 @@ export class AvatarRenderer {
       } else if (this.targetEmotion === 'WINK') {
         leftH = 4;
       } else if (this.targetEmotion === 'SURPRISED') {
-        rightW = this.eyeWidth * 1.3;
+        rightW = this.eyeWidth * 1.3 * rightCompress;
         rightH = currentHeight * 1.18;
       } else if (this.targetEmotion === 'STAR') {
-        this.drawStarEye(leftEyeX, eyeY, leftW);
-        this.drawStarEye(rightEyeX, eyeY, rightW);
+        this.drawStarEye(leftEyeX, leftEyeY, leftW);
+        this.drawStarEye(rightEyeX, rightEyeY, rightW);
         return;
       }
     }
@@ -2281,10 +2290,10 @@ export class AvatarRenderer {
     }
 
     // Left Pill Eye
-    this.drawPillEye(leftEyeX, eyeY, leftW, leftH, leftTilt);
+    this.drawPillEye(leftEyeX, leftEyeY, leftW, leftH, leftTilt);
     
     // Right Pill Eye
-    this.drawPillEye(rightEyeX, eyeY, rightW, rightH, rightTilt);
+    this.drawPillEye(rightEyeX, rightEyeY, rightW, rightH, rightTilt);
   }
 
   drawCrescentEye(x, y, w, h, tilt) {
