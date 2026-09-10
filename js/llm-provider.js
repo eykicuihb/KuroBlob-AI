@@ -53,6 +53,9 @@ Keep responses engaging, concise, and helpful.`;
    * Generate structured JSON output with custom system prompt (e.g. for Expression Creator Skill)
    */
   async generateJson(systemPrompt, userPrompt) {
+    if (!this.isConfigured()) {
+      throw new Error('LLM provider is not configured. Enable it and provide an API key before making requests.');
+    }
     let endpoint = this.config.baseUrl.trim();
     if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
     if (!endpoint.endsWith('/chat/completions')) {
@@ -113,6 +116,9 @@ Keep responses engaging, concise, and helpful.`;
    * Stream chat completion from OpenAI-compatible API
    */
   async streamChat(history, onChunk, onEmotion) {
+    if (!this.isConfigured()) {
+      throw new Error('LLM provider is not configured. Enable it and provide an API key before making requests.');
+    }
     let endpoint = this.config.baseUrl.trim();
     if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
     if (!endpoint.endsWith('/chat/completions')) {
