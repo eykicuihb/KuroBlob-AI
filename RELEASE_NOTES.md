@@ -1,11 +1,47 @@
-# 🚀 KuroBlob AI v0.2.0 Release Notes
+# 🚀 KuroBlob AI v0.3.0 Release Notes
 
-> **"Procedural Mascot Chatter, Expression Vault, Motion Exporter & Multi-Layer Controls"**  
-> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.2.0` 重大交互升级！新增萌系动森风程序化语聊音效（Mascot Vocal Synth Chatter）与嘴形同步、AI 表情专属收藏库、3 秒动态 WebM 动图表情包导出、Light 模式高保真白底渲染、全图层独立自选开关（星环/微粒/配饰/腮红）、OBS 演播绿幕抠像与疯狂拉扯物理眩晕反应！
+> **"Animation Timeline Sequencer, Blink-Masked Morphing, Native MP4 Export & State Board"**  
+> 灵动软萌的物理级 2D/3D 果冻 AI 伴侣迎来 `v0.3.0` 重大架构与功能升级！新增第四大核心工作区【🎞️ 动画时间线与剧情编排工作台】（Animation Timeline & Montage Sequencer）、闭眼遮罩形变平滑过渡（Blink-Masked Transition）、0.69x 正交深度投影矩阵、60+ 全表情全景状态展板（State Board `#planche`）、全平台通用的智能 MP4 视频直接导出、移动端触觉震动马达反馈（Haptics）、多情绪动森语调调制，以及自定义表情包一键 JSON 导入导出与代码执行安全沙箱！
 
 ---
 
-## 🌟 What's New in v0.2.0 / 核心新特性
+## 🌟 What's New in v0.3.0 / 核心新特性
+
+### 1. 🎞️ 动画时间线与剧情编排工作台 (Animation Timeline Sequencer)
+- **多动作自由拼装与微调**：支持从 60+ 内置动作与 AI 自创表情中自由挑选，编排成连贯的动作剧情；每张片段卡片配备 `0.4s ~ 6.0s` 独立停留时长滑块，顶部实时汇总整轨总播放时长。
+- **4 大叙事剧情预设模板**：
+  - 💡 **沉思到顿悟 (Insight)**：`IDLE` (1.2s) ➔ `THINKING` (2.0s) ➔ `STAR` (1.5s) ➔ `HAPPY` (2.0s)
+  - 💘 **酷帅到心动 (Romance)**：`COOL` (1.5s) ➔ `WINK` (1.0s) ➔ `SHY` (1.8s) ➔ `LOVE` (2.2s)
+  - 💻 **极客黑客狂欢 (Hacker)**：`ROBOT` (1.5s) ➔ `FOCUSED` (2.0s) ➔ `FIRE` (1.5s) ➔ `PARTY` (2.5s)
+  - 🌈 **阴晴雨雪彩虹 (Weather)**：`SUNNY` ➔ `WINDY` ➔ `RAIN` ➔ `THUNDER` ➔ `RAINBOW`
+- **循环播放与游标高亮追踪**：一键播放时间线，正在表演的动作卡片带有紫色霓虹光晕放大高亮，并自动平滑横向居中滚动跟随。
+- **🎬 一键整轨导出 MP4 剧情**：一键将整条时间线的动作序列高帧率录制并编码导出为标准的 MP4 视频，适配 Twitter/X 与微信直接发布！
+
+### 2. 👁️ 闭眼遮罩形变过渡 (Blink-Masked Transition / x.ai 架构优化)
+- **自然闭眼掩盖几何突变**：参考业界先进设计，在化身进行任何大幅度表情切换瞬间，自动触发 `0.18s` 的自然闭眼动画遮罩，视觉上彻底消除不同五官与外置配饰瞬间跳帧的生硬感。
+- **0.69x 正交球面深度投影**：将垂直注视俯仰角映射对齐为真实三维球面投影公式 `ey = sin(pitch) * 0.69 * R`，头部与眼神在空间转动时更具实体 3D 纵深感。
+
+### 3. 🧩 60+ 种全量表情状态全景展板 (State Board `#planche`)
+- **全状态极速画廊**：导航栏新增 **“🧩 全景展板”** 按钮（支持深度链接 `http://localhost:3000/#planche`），弹窗展示全部 60+ 个内置与自定义动作的卡片式状态网格，点击任意卡片即可在背景即时预览切换。
+
+### 4. 🎬 原生探测 MP4 导出 (Twitter/X & 社交媒体兼容)
+- **智能格式探针**：`AnimationRecorder` 优先探测 `video/mp4;codecs=avc1.42E01E,mp4a.40.2` 与 `video/mp4`，支持现代浏览器原生直录 `.mp4`；在仅支持 WebM 的环境下平滑回退至 `video/webm`，彻底解决社交平台格式兼容痛点。
+
+### 5. 📱 移动端防滚与触觉震动马达反馈 (Haptic Vibration)
+- **精准防滚保护**：画布注入 `touch-action: none` 与 `ResizeObserver` 动态重算机制，彻底告别移动端揉捏果冻引发的页面滚动或画面模糊。
+- **双模触觉马达**：捏脸拉伸回弹（`boing`）与物理过载眩晕（`dizzy`）支持调用真实手机硬件震动马达。
+
+### 6. 🎵 多情绪动森语调调制 (Mood-Driven Vocal Chatter)
+- **情绪化音阶调制**：将程序化 Web Audio 语聊根据化身情绪动态调制为 5 种不同波形和调式（开心高八度、心动柔和调、悲伤下潜音、暴走锯齿波、专注石英音），带来更加活泼生动的互动陪伴体验。
+
+### 7. 📤 表情包专属收藏库 JSON 备份分享与重置默认
+- **一键分享自创果冻**：表情包收藏库支持 **“📤 导出配置”**（下载 `.json` 文件）与 **“📥 导入配置”**（合并外部配置），方便社区二次创作与分享。
+- **工坊一键“↺ 恢复默认”**：一键将工坊形变滑块、双眼倾角与三维参数还原为官方出厂基准配置。
+- **Canvas 代码安全沙箱**：加入 AST 黑名单检测，阻止非绘图危险代码执行。
+
+---
+
+# 🚀 KuroBlob AI v0.2.0 Release Notes
 
 ### 1. 🎵 萌系程序化语聊音效与嘴形同步 (Procedural Mascot Chatter & Lip-Sync)
 - **动森风程序化语调合成**：告别生硬机械的传统 TTS，采用 100% 纯数学 Web Audio API 程序化合成器，将文字逐字映射至灵动悦耳的五声音阶（Pentatonic Synth Chirp）。
