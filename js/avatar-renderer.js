@@ -30,12 +30,12 @@ export class AvatarRenderer {
     this.currentRadii = new Float32Array(this.numPoints);
     this.velocities = new Float32Array(this.numPoints);
     
-    // Eye Properties
+    // Eye Properties (Measured Golden Proportions relative to baseRadius)
     this.eyeOffset = { x: 0, y: 0 };
     this.targetEyeOffset = { x: 0, y: 0 };
-    this.eyeWidth = 16;
-    this.eyeHeight = 38;
-    this.eyeSpacing = 28;
+    this.eyeWidth = 20;
+    this.eyeHeight = 44;
+    this.eyeSpacing = 48;
     this.eyeTilt = 0; // Angle per eye
     this.blinkProgress = 0; // 0 = open, 1 = closed
     this.isBlinking = false;
@@ -56,12 +56,15 @@ export class AvatarRenderer {
       smoothMouth: 0
     };
     
-    // 3D Orbital Rings (for THINKING state - frames 19-22 in video)
+    // 3D Orbital Rainbow Rings (Bloub / Grok 3D Planetary Architecture)
+    // Dynamic orthogonal projection with multi-spectral rainbow gradient and z-depth sorting
     this.orbitalRings = [
-      { radius: 130, tiltX: 0.8, tiltY: 0.3, rotZ: 0.2, speed: 0.025, color1: '#FF3B30', color2: '#FF9500', width: 6, angle: 0 },
-      { radius: 145, tiltX: -0.6, tiltY: 0.7, rotZ: -0.4, speed: -0.03, color1: '#34C759', color2: '#30B0C7', width: 5, angle: 1 },
-      { radius: 160, tiltX: 0.4, tiltY: -0.8, rotZ: 0.6, speed: 0.02, color1: '#AF52DE', color2: '#5856D6', width: 7, angle: 2 },
-      { radius: 135, tiltX: -0.9, tiltY: -0.2, rotZ: -0.8, speed: -0.035, color1: '#FF2D55', color2: '#FFCC00', width: 5.5, angle: 3 }
+      { a: 1.34, k: 0.18, tilt: -0.42, speed: 0.022, hue: 0, hueSpan: 160, isRainbow: true, widthRatio: 0.060, angle: 0 },
+      { a: 1.42, k: 0.28, tilt: 0.55, speed: -0.028, hue: 60, hueSpan: 180, isRainbow: true, widthRatio: 0.052, angle: 1.2 },
+      { a: 1.50, k: 0.12, tilt: -0.85, speed: 0.018, hue: 140, hueSpan: 200, isRainbow: true, widthRatio: 0.066, angle: 2.4 },
+      { a: 1.38, k: 0.35, tilt: 0.22, speed: -0.025, hue: 210, hueSpan: 160, isRainbow: true, widthRatio: 0.055, angle: 3.6 },
+      { a: 1.56, k: 0.20, tilt: -0.15, speed: 0.030, hue: 280, hueSpan: 170, isRainbow: true, widthRatio: 0.058, angle: 4.8 },
+      { a: 1.44, k: 0.32, tilt: 0.78, speed: -0.020, hue: 330, hueSpan: 180, isRainbow: true, widthRatio: 0.048, angle: 5.5 }
     ];
     this.ringVisibility = 0; // 0 = invisible, 1 = fully visible
     
@@ -83,9 +86,9 @@ export class AvatarRenderer {
     this.customConfig = {
       shape: 'BLOB',
       eyeStyle: 'PILL',
-      eyeWidth: 16,
-      eyeHeight: 38,
-      eyeSpacing: 28,
+      eyeWidth: 20,
+      eyeHeight: 44,
+      eyeSpacing: 48,
       eyeTilt: 0,
       eyeRotation: 0,
       eyePosX: 0,
@@ -512,8 +515,9 @@ export class AvatarRenderer {
     let targetScaleX = 1;
     let targetScaleY = 1;
     let targetRotation = 0;
-    let targetEyeWidth = 16;
-    let targetEyeHeight = 38;
+    let targetEyeWidth = 20;
+    let targetEyeHeight = 44;
+    let targetEyeSpacing = 48;
     let targetEyeTilt = 0;
     let targetRingVis = 0;
     let targetParticleVis = 0;
@@ -533,8 +537,9 @@ export class AvatarRenderer {
         // 3D Orbital rings spin actively
         targetRingVis = 1;
         targetRotation = Math.sin(t * 1.2) * 0.08 - 0.1;
-        targetEyeWidth = 14;
-        targetEyeHeight = 32;
+        targetEyeWidth = 18;
+        targetEyeHeight = 38;
+        targetEyeSpacing = 46;
         targetEyeTilt = -0.15; // Curious slant
         targetScaleX = 0.96 + Math.sin(t * 2) * 0.04;
         targetScaleY = 1.04 - Math.sin(t * 2) * 0.04;
@@ -546,8 +551,9 @@ export class AvatarRenderer {
         targetRingVis = 0.4;
         targetScaleX = 0.92 + Math.sin(t * 8) * 0.05; // Fast rhythmic pulse
         targetScaleY = 1.08 - Math.sin(t * 8) * 0.05;
-        targetEyeWidth = 14;
-        targetEyeHeight = 26;
+        targetEyeWidth = 18;
+        targetEyeHeight = 32;
+        targetEyeSpacing = 48;
         targetEyeTilt = 0.1;
         break;
 
@@ -556,8 +562,9 @@ export class AvatarRenderer {
         targetScaleX = 1.28 + Math.sin(t * 10) * 0.04; // Aggressive vibration
         targetScaleY = 0.72 - Math.sin(t * 10) * 0.04;
         targetRotation = Math.sin(t * 6) * 0.05;
-        targetEyeWidth = 20;
-        targetEyeHeight = 24;
+        targetEyeWidth = 24;
+        targetEyeHeight = 28;
+        targetEyeSpacing = 44;
         targetEyeTilt = 0.35; // Sharp inward slant \ /
         break;
 
@@ -566,8 +573,9 @@ export class AvatarRenderer {
         targetScaleX = 1 + Math.sin(t * 4) * 0.12;
         targetScaleY = 1 - Math.sin(t * 4) * 0.12;
         targetRotation = Math.sin(t * 2) * 0.1;
-        targetEyeWidth = 22;
-        targetEyeHeight = 30;
+        targetEyeWidth = 26;
+        targetEyeHeight = 36;
+        targetEyeSpacing = 48;
         targetEyeTilt = 0;
         break;
 
@@ -575,8 +583,9 @@ export class AvatarRenderer {
         // Vertical egg shape stretch (Video frame 17), wide open eyes O o
         targetScaleX = 0.78 + Math.sin(t * 3) * 0.03;
         targetScaleY = 1.25 - Math.sin(t * 3) * 0.03;
-        targetEyeWidth = 24;
-        targetEyeHeight = 44;
+        targetEyeWidth = 28;
+        targetEyeHeight = 52;
+        targetEyeSpacing = 52;
         targetRotation = (Math.random() - 0.5) * 0.04;
         break;
 
@@ -585,8 +594,9 @@ export class AvatarRenderer {
         targetRotation = 0.28 + Math.sin(t * 1.5) * 0.05;
         targetScaleX = 1.08;
         targetScaleY = 0.92;
-        targetEyeWidth = 16;
-        targetEyeHeight = 30;
+        targetEyeWidth = 20;
+        targetEyeHeight = 36;
+        targetEyeSpacing = 46;
         targetEyeTilt = -0.25;
         break;
 
@@ -594,8 +604,9 @@ export class AvatarRenderer {
         // Low flat puddle, slow breath
         targetScaleX = 1.35 + Math.sin(t * 0.8) * 0.04;
         targetScaleY = 0.65 - Math.sin(t * 0.8) * 0.04;
-        targetEyeWidth = 22;
+        targetEyeWidth = 26;
         targetEyeHeight = 6;
+        targetEyeSpacing = 48;
         targetEyeTilt = 0;
         break;
 
@@ -603,8 +614,9 @@ export class AvatarRenderer {
         // Heartbeat pulse with blush aura
         targetScaleX = 1 + Math.sin(t * 6) * 0.06;
         targetScaleY = 1 - Math.sin(t * 6) * 0.06;
-        targetEyeWidth = 22;
-        targetEyeHeight = 16;
+        targetEyeWidth = 26;
+        targetEyeHeight = 20;
+        targetEyeSpacing = 48;
         targetEyeTilt = 0.15;
         break;
 
@@ -613,8 +625,9 @@ export class AvatarRenderer {
         targetScaleX = 1.1 + Math.sin(t * 12) * 0.08;
         targetScaleY = 0.9 - Math.sin(t * 12) * 0.08;
         targetRotation = Math.sin(t * 10) * 0.08;
-        targetEyeWidth = 26;
-        targetEyeHeight = 12;
+        targetEyeWidth = 28;
+        targetEyeHeight = 16;
+        targetEyeSpacing = 50;
         break;
 
       case 'SAD':
@@ -622,16 +635,18 @@ export class AvatarRenderer {
         targetScaleX = 0.92;
         targetScaleY = 1.12;
         targetRotation = -0.05 + Math.sin(t * 1.5) * 0.02;
-        targetEyeWidth = 14;
-        targetEyeHeight = 28;
+        targetEyeWidth = 18;
+        targetEyeHeight = 32;
+        targetEyeSpacing = 46;
         break;
 
       case 'SHOCKED':
-        // Tremble vibration & tiny wide open eyes
+        // Tremble vibration & wide open eyes
         targetScaleX = 0.88 + (Math.random() - 0.5) * 0.04;
         targetScaleY = 1.18 + (Math.random() - 0.5) * 0.04;
-        targetEyeWidth = 12;
-        targetEyeHeight = 48;
+        targetEyeWidth = 16;
+        targetEyeHeight = 52;
+        targetEyeSpacing = 52;
         break;
 
       case 'SMUG':
@@ -639,8 +654,9 @@ export class AvatarRenderer {
         targetRotation = -0.22;
         targetScaleX = 1.05;
         targetScaleY = 0.95;
-        targetEyeWidth = 18;
-        targetEyeHeight = 22;
+        targetEyeWidth = 22;
+        targetEyeHeight = 26;
+        targetEyeSpacing = 48;
         break;
 
       case 'FOCUSED':
@@ -648,8 +664,9 @@ export class AvatarRenderer {
         targetParticleVis = 0.6;
         targetScaleX = 0.96 + Math.sin(t * 3) * 0.02;
         targetScaleY = 1.04 - Math.sin(t * 3) * 0.02;
-        targetEyeWidth = 12;
-        targetEyeHeight = 36;
+        targetEyeWidth = 16;
+        targetEyeHeight = 40;
+        targetEyeSpacing = 44;
         break;
 
       case 'DIZZY':
@@ -657,8 +674,9 @@ export class AvatarRenderer {
         targetRotation = Math.sin(t * 4) * 0.2;
         targetScaleX = 1 + Math.sin(t * 5) * 0.08;
         targetScaleY = 1 - Math.sin(t * 5) * 0.08;
-        targetEyeWidth = 16;
-        targetEyeHeight = 24;
+        targetEyeWidth = 22;
+        targetEyeHeight = 30;
+        targetEyeSpacing = 48;
         break;
 
       case 'SHY':
@@ -666,8 +684,9 @@ export class AvatarRenderer {
         targetScaleX = 0.94;
         targetScaleY = 1.04;
         targetRotation = 0.1;
-        targetEyeWidth = 14;
-        targetEyeHeight = 22;
+        targetEyeWidth = 16;
+        targetEyeHeight = 26;
+        targetEyeSpacing = 46;
         targetEyeTilt = 0.1;
         break;
 
@@ -676,8 +695,9 @@ export class AvatarRenderer {
         targetRotation = -0.15;
         targetScaleX = 1.12;
         targetScaleY = 0.88;
-        targetEyeWidth = 22;
-        targetEyeHeight = 18;
+        targetEyeWidth = 24;
+        targetEyeHeight = 24;
+        targetEyeSpacing = 46;
         break;
 
       case 'HYPED':
@@ -685,16 +705,18 @@ export class AvatarRenderer {
         targetRingVis = 1;
         targetScaleX = 1 + Math.sin(t * 8) * 0.14;
         targetScaleY = 1 - Math.sin(t * 8) * 0.14;
-        targetEyeWidth = 26;
-        targetEyeHeight = 44;
+        targetEyeWidth = 28;
+        targetEyeHeight = 50;
+        targetEyeSpacing = 50;
         break;
 
       case 'BORED':
         // Flat puddle, eyes looking up
         targetScaleX = 1.25;
         targetScaleY = 0.75;
-        targetEyeWidth = 20;
-        targetEyeHeight = 12;
+        targetEyeWidth = 22;
+        targetEyeHeight = 14;
+        targetEyeSpacing = 48;
         break;
 
       case 'WINK':
@@ -702,8 +724,9 @@ export class AvatarRenderer {
         targetRotation = 0.12;
         targetScaleX = 1.05;
         targetScaleY = 0.95;
-        targetEyeWidth = 20;
-        targetEyeHeight = 36;
+        targetEyeWidth = 22;
+        targetEyeHeight = 44;
+        targetEyeSpacing = 48;
         break;
 
       case 'COOL':
@@ -711,16 +734,18 @@ export class AvatarRenderer {
         targetRotation = -0.08;
         targetScaleX = 1.1;
         targetScaleY = 0.9;
-        targetEyeWidth = 28;
-        targetEyeHeight = 16;
+        targetEyeWidth = 30;
+        targetEyeHeight = 18;
+        targetEyeSpacing = 50;
         break;
 
       case 'NERVOUS':
-        // High frequency tremble & small eyes
+        // High frequency tremble & focused eyes
         targetScaleX = 0.92 + (Math.random() - 0.5) * 0.03;
         targetScaleY = 1.08 + (Math.random() - 0.5) * 0.03;
-        targetEyeWidth = 12;
-        targetEyeHeight = 24;
+        targetEyeWidth = 16;
+        targetEyeHeight = 28;
+        targetEyeSpacing = 46;
         break;
 
       case 'PARTY':
@@ -728,8 +753,9 @@ export class AvatarRenderer {
         targetParticleVis = 1;
         targetScaleX = 1 + Math.sin(t * 10) * 0.15;
         targetScaleY = 1 - Math.sin(t * 10) * 0.15;
-        targetEyeWidth = 24;
-        targetEyeHeight = 32;
+        targetEyeWidth = 26;
+        targetEyeHeight = 36;
+        targetEyeSpacing = 48;
         break;
 
       case 'DISGUSTED':
@@ -737,31 +763,35 @@ export class AvatarRenderer {
         targetRotation = 0.25;
         targetScaleX = 0.85;
         targetScaleY = 1.15;
-        targetEyeWidth = 16;
-        targetEyeHeight = 16;
+        targetEyeWidth = 18;
+        targetEyeHeight = 20;
+        targetEyeSpacing = 46;
         break;
 
       case 'ROBOT':
         // Rigid squircle shape
         targetScaleX = 1 + Math.sin(t * 2) * 0.02;
         targetScaleY = 1 - Math.sin(t * 2) * 0.02;
-        targetEyeWidth = 18;
-        targetEyeHeight = 36;
+        targetEyeWidth = 22;
+        targetEyeHeight = 40;
+        targetEyeSpacing = 48;
         break;
 
       case 'BOBA':
         // Giant kawaii Boba eyes
         targetScaleX = 1.05;
         targetScaleY = 0.95;
-        targetEyeWidth = 32;
-        targetEyeHeight = 52;
+        targetEyeWidth = 36;
+        targetEyeHeight = 58;
+        targetEyeSpacing = 52;
         break;
 
       case 'CAT':
         // Neko cat ear morphing
         targetRotation = Math.sin(t * 3) * 0.06;
-        targetEyeWidth = 20;
-        targetEyeHeight = 22;
+        targetEyeWidth = 22;
+        targetEyeHeight = 26;
+        targetEyeSpacing = 48;
         targetEyeTilt = 0.15;
         break;
 
@@ -770,32 +800,36 @@ export class AvatarRenderer {
         targetScaleX = 0.9 + Math.sin(t * 2) * 0.05;
         targetScaleY = 1.1 - Math.sin(t * 2) * 0.05;
         targetRotation = Math.sin(t * 1.5) * 0.1;
-        targetEyeWidth = 18;
-        targetEyeHeight = 34;
+        targetEyeWidth = 20;
+        targetEyeHeight = 38;
+        targetEyeSpacing = 48;
         break;
 
       case 'RABBIT':
         // Bunny ears & rapid hop
         targetScaleX = 0.92 + Math.sin(t * 6) * 0.08;
         targetScaleY = 1.08 - Math.sin(t * 6) * 0.08;
-        targetEyeWidth = 16;
-        targetEyeHeight = 28;
+        targetEyeWidth = 18;
+        targetEyeHeight = 32;
+        targetEyeSpacing = 46;
         break;
 
       case 'ANGEL':
         // Floating holy halo
         targetScaleX = 1 + Math.sin(t * 1.2) * 0.03;
         targetScaleY = 1 - Math.sin(t * 1.2) * 0.03;
-        targetEyeWidth = 18;
-        targetEyeHeight = 32;
+        targetEyeWidth = 20;
+        targetEyeHeight = 38;
+        targetEyeSpacing = 48;
         break;
 
       case 'DEVIL':
         // Cute red horns
         targetScaleX = 1.08;
         targetScaleY = 0.92;
-        targetEyeWidth = 22;
-        targetEyeHeight = 20;
+        targetEyeWidth = 24;
+        targetEyeHeight = 24;
+        targetEyeSpacing = 46;
         targetEyeTilt = 0.25;
         break;
 
@@ -803,24 +837,27 @@ export class AvatarRenderer {
         // Extreme jelly spring squish
         targetScaleX = 1.25 + Math.sin(t * 8) * 0.25;
         targetScaleY = 0.75 - Math.sin(t * 8) * 0.25;
-        targetEyeWidth = 24;
-        targetEyeHeight = 24;
+        targetEyeWidth = 26;
+        targetEyeHeight = 28;
+        targetEyeSpacing = 48;
         break;
 
       case 'YAWN':
         // Sleepy mouth yawn & tears
         targetScaleX = 0.9;
         targetScaleY = 1.15;
-        targetEyeWidth = 20;
-        targetEyeHeight = 8;
+        targetEyeWidth = 22;
+        targetEyeHeight = 10;
+        targetEyeSpacing = 48;
         break;
 
       case 'PUFF':
         // Pouty puffed cheeks
         targetScaleX = 1.32;
         targetScaleY = 0.82;
-        targetEyeWidth = 18;
-        targetEyeHeight = 16;
+        targetEyeWidth = 20;
+        targetEyeHeight = 18;
+        targetEyeSpacing = 48;
         targetEyeTilt = 0.15;
         break;
 
@@ -829,15 +866,17 @@ export class AvatarRenderer {
         targetParticleVis = 1;
         targetScaleX = 1 + Math.sin(t * 4) * 0.06;
         targetScaleY = 1 - Math.sin(t * 4) * 0.06;
-        targetEyeWidth = 24;
-        targetEyeHeight = 40;
+        targetEyeWidth = 28;
+        targetEyeHeight = 44;
+        targetEyeSpacing = 50;
         break;
 
       case 'PIRATE':
         // Eyepatch look
         targetRotation = -0.1;
-        targetEyeWidth = 20;
-        targetEyeHeight = 36;
+        targetEyeWidth = 22;
+        targetEyeHeight = 40;
+        targetEyeSpacing = 48;
         break;
 
       case 'SUPERHERO':
@@ -845,16 +884,18 @@ export class AvatarRenderer {
         targetScaleX = 1.12;
         targetScaleY = 0.94;
         targetRotation = -0.15;
-        targetEyeWidth = 22;
-        targetEyeHeight = 24;
+        targetEyeWidth = 24;
+        targetEyeHeight = 28;
+        targetEyeSpacing = 48;
         break;
 
       case 'PANDA':
         // Panda eyes
         targetScaleX = 1.06;
         targetScaleY = 0.94;
-        targetEyeWidth = 20;
-        targetEyeHeight = 32;
+        targetEyeWidth = 22;
+        targetEyeHeight = 36;
+        targetEyeSpacing = 48;
         break;
 
       case 'MUSIC':
@@ -862,8 +903,9 @@ export class AvatarRenderer {
         targetRotation = Math.sin(t * 6) * 0.15;
         targetScaleX = 1 + Math.sin(t * 6) * 0.08;
         targetScaleY = 1 - Math.sin(t * 6) * 0.08;
-        targetEyeWidth = 18;
-        targetEyeHeight = 30;
+        targetEyeWidth = 20;
+        targetEyeHeight = 34;
+        targetEyeSpacing = 48;
         break;
 
       case 'FOODIE':
@@ -871,39 +913,44 @@ export class AvatarRenderer {
         targetScaleX = 1.05;
         targetScaleY = 0.95;
         targetRotation = 0.12;
-        targetEyeWidth = 20;
-        targetEyeHeight = 20;
+        targetEyeWidth = 22;
+        targetEyeHeight = 24;
+        targetEyeSpacing = 48;
         break;
 
       case 'SNOW':
         // Shivering freeze
         targetScaleX = 0.9 + (Math.random() - 0.5) * 0.04;
         targetScaleY = 1.1 + (Math.random() - 0.5) * 0.04;
-        targetEyeWidth = 14;
-        targetEyeHeight = 28;
+        targetEyeWidth = 16;
+        targetEyeHeight = 32;
+        targetEyeSpacing = 46;
         break;
 
       case 'FIRE':
         // Flaming passion
         targetScaleX = 0.88 + Math.sin(t * 10) * 0.06;
         targetScaleY = 1.16 - Math.sin(t * 10) * 0.06;
-        targetEyeWidth = 20;
-        targetEyeHeight = 38;
+        targetEyeWidth = 22;
+        targetEyeHeight = 42;
+        targetEyeSpacing = 48;
         break;
 
       case 'ALIEN':
         // UFO antenna
         targetRotation = Math.sin(t * 2) * 0.08;
-        targetEyeWidth = 26;
-        targetEyeHeight = 44;
+        targetEyeWidth = 28;
+        targetEyeHeight = 48;
+        targetEyeSpacing = 52;
         break;
 
       case 'MAGIC':
         // Magic star particles
         targetRingVis = 0.8;
         targetParticleVis = 1;
-        targetEyeWidth = 20;
-        targetEyeHeight = 34;
+        targetEyeWidth = 22;
+        targetEyeHeight = 38;
+        targetEyeSpacing = 48;
         break;
 
       case 'NINJA':
@@ -911,40 +958,45 @@ export class AvatarRenderer {
         targetRotation = -0.1;
         targetScaleX = 1.15;
         targetScaleY = 0.85;
-        targetEyeWidth = 24;
-        targetEyeHeight = 12;
+        targetEyeWidth = 26;
+        targetEyeHeight = 14;
+        targetEyeSpacing = 48;
         break;
 
       case 'MARSHMALLOW':
         // Soft cloud puff
         targetScaleX = 1.1 + Math.sin(t * 2) * 0.05;
         targetScaleY = 0.9 - Math.sin(t * 2) * 0.05;
-        targetEyeWidth = 16;
-        targetEyeHeight = 26;
+        targetEyeWidth = 18;
+        targetEyeHeight = 30;
+        targetEyeSpacing = 48;
         break;
 
       case 'PIXEL':
         // Retro pixel pulse
         targetScaleX = 1 + Math.floor(Math.sin(t * 4) * 2) * 0.05;
         targetScaleY = 1 - Math.floor(Math.sin(t * 4) * 2) * 0.05;
-        targetEyeWidth = 20;
-        targetEyeHeight = 32;
+        targetEyeWidth = 22;
+        targetEyeHeight = 36;
+        targetEyeSpacing = 48;
         break;
 
       case 'COSMIC':
         // Galaxy orbit
         targetRingVis = 1;
         targetParticleVis = 1;
-        targetEyeWidth = 22;
-        targetEyeHeight = 38;
+        targetEyeWidth = 24;
+        targetEyeHeight = 42;
+        targetEyeSpacing = 48;
         break;
 
       case 'ZEN':
         // Slow float meditation
         targetScaleX = 1 + Math.sin(t * 0.6) * 0.02;
         targetScaleY = 1 - Math.sin(t * 0.6) * 0.02;
-        targetEyeWidth = 20;
-        targetEyeHeight = 6;
+        targetEyeWidth = 22;
+        targetEyeHeight = 8;
+        targetEyeSpacing = 48;
         break;
 
       case 'CELEBRITY':
@@ -954,6 +1006,7 @@ export class AvatarRenderer {
         targetRotation = -0.1;
         targetEyeWidth = 30;
         targetEyeHeight = 18;
+        targetEyeSpacing = 50;
         break;
 
       /* --- Weather Forecast Suite (10 Procedural Weather Emotions) --- */
@@ -962,7 +1015,8 @@ export class AvatarRenderer {
         targetScaleX = 1.06 + Math.sin(t * 3) * 0.04;
         targetScaleY = 0.94 - Math.sin(t * 3) * 0.04;
         targetEyeWidth = 28;
-        targetEyeHeight = 14;
+        targetEyeHeight = 16;
+        targetEyeSpacing = 50;
         targetEyeTilt = -0.1;
         break;
 
@@ -970,24 +1024,27 @@ export class AvatarRenderer {
         // Rain cloud bob with falling raindrops
         targetScaleX = 1.1;
         targetScaleY = 0.9;
-        targetEyeWidth = 18;
-        targetEyeHeight = 28;
+        targetEyeWidth = 20;
+        targetEyeHeight = 32;
+        targetEyeSpacing = 48;
         break;
 
       case 'THUNDER':
         // Jagged storm tremble & lightning flash
         targetScaleX = 0.88 + (Math.random() - 0.5) * 0.06;
         targetScaleY = 1.12 + (Math.random() - 0.5) * 0.06;
-        targetEyeWidth = 14;
-        targetEyeHeight = 38;
+        targetEyeWidth = 16;
+        targetEyeHeight = 42;
+        targetEyeSpacing = 46;
         break;
 
       case 'SNOWY':
         // Soft snow cloud & float
         targetScaleX = 1.05 + Math.sin(t * 2) * 0.04;
         targetScaleY = 0.95 - Math.sin(t * 2) * 0.04;
-        targetEyeWidth = 18;
-        targetEyeHeight = 24;
+        targetEyeWidth = 20;
+        targetEyeHeight = 28;
+        targetEyeSpacing = 48;
         break;
 
       case 'WINDY':
@@ -995,32 +1052,36 @@ export class AvatarRenderer {
         targetRotation = -0.22 + Math.sin(t * 6) * 0.08;
         targetScaleX = 1.18;
         targetScaleY = 0.82;
-        targetEyeWidth = 24;
-        targetEyeHeight = 12;
+        targetEyeWidth = 26;
+        targetEyeHeight = 14;
+        targetEyeSpacing = 48;
         break;
 
       case 'FOGGY':
         // Flat hazy puddle
         targetScaleX = 1.3;
         targetScaleY = 0.7;
-        targetEyeWidth = 22;
-        targetEyeHeight = 8;
+        targetEyeWidth = 24;
+        targetEyeHeight = 10;
+        targetEyeSpacing = 48;
         break;
 
       case 'RAINBOW':
         // Happy spring arc & 7-color rainbow
         targetScaleX = 1.08 + Math.sin(t * 5) * 0.08;
         targetScaleY = 0.92 - Math.sin(t * 5) * 0.08;
-        targetEyeWidth = 22;
-        targetEyeHeight = 26;
+        targetEyeWidth = 24;
+        targetEyeHeight = 30;
+        targetEyeSpacing = 48;
         break;
 
       case 'HAIL':
         // Shivering hail bounce
         targetScaleX = 0.9 + (Math.random() - 0.5) * 0.05;
         targetScaleY = 1.1 + (Math.random() - 0.5) * 0.05;
-        targetEyeWidth = 16;
-        targetEyeHeight = 32;
+        targetEyeWidth = 18;
+        targetEyeHeight = 36;
+        targetEyeSpacing = 46;
         break;
 
       case 'TORNADO':
@@ -1028,8 +1089,9 @@ export class AvatarRenderer {
         targetRotation = Math.sin(t * 12) * 0.3;
         targetScaleX = 0.85 + Math.sin(t * 10) * 0.15;
         targetScaleY = 1.15 - Math.sin(t * 10) * 0.15;
-        targetEyeWidth = 18;
-        targetEyeHeight = 24;
+        targetEyeWidth = 20;
+        targetEyeHeight = 28;
+        targetEyeSpacing = 48;
         break;
     }
 
@@ -1044,6 +1106,7 @@ export class AvatarRenderer {
     if (this.studioMode) {
       targetEyeWidth = this.customConfig.eyeWidth;
       targetEyeHeight = this.customConfig.eyeHeight;
+      targetEyeSpacing = this.customConfig.eyeSpacing;
       targetEyeTilt = (this.customConfig.eyeTilt * Math.PI) / 180;
       targetRingVis = this.customConfig.showRings ? 1 : 0;
       targetParticleVis = this.customConfig.showParticles ? 1 : 0;
@@ -1051,6 +1114,7 @@ export class AvatarRenderer {
 
     this.eyeWidth += (targetEyeWidth - this.eyeWidth) * lerpRate;
     this.eyeHeight += (targetEyeHeight - this.eyeHeight) * lerpRate;
+    this.eyeSpacing += (targetEyeSpacing - this.eyeSpacing) * lerpRate;
     this.eyeTilt += (targetEyeTilt - this.eyeTilt) * lerpRate;
     
     this.ringVisibility += (targetRingVis - this.ringVisibility) * 0.05;
@@ -2120,75 +2184,81 @@ export class AvatarRenderer {
 
   drawPandaRings() {
     this.ctx.save();
+    const bodyScale = this.baseRadius / 90;
+    const spacing = (this.studioMode ? this.customConfig.eyeSpacing : this.eyeSpacing) * bodyScale;
     // Slanted Dark Panda Eye Patches
     this.ctx.fillStyle = '#1E293B';
     // Left patch
     this.ctx.beginPath();
-    this.ctx.ellipse(-this.eyeSpacing / 2 + this.eyeOffset.x, -12 + this.eyeOffset.y, 18, 25, -0.25, 0, Math.PI * 2);
+    this.ctx.ellipse(-spacing / 2 + this.eyeOffset.x * bodyScale, (-12 + this.eyeOffset.y) * bodyScale, 20 * bodyScale, 28 * bodyScale, -0.25, 0, Math.PI * 2);
     this.ctx.fill();
     // Right patch
     this.ctx.beginPath();
-    this.ctx.ellipse(this.eyeSpacing / 2 + this.eyeOffset.x, -12 + this.eyeOffset.y, 18, 25, 0.25, 0, Math.PI * 2);
+    this.ctx.ellipse(spacing / 2 + this.eyeOffset.x * bodyScale, (-12 + this.eyeOffset.y) * bodyScale, 20 * bodyScale, 28 * bodyScale, 0.25, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.restore();
   }
 
   drawEyepatch() {
     this.ctx.save();
-    const leftEyeX = -this.eyeSpacing / 2 + this.eyeOffset.x;
-    const eyeY = -12 + this.eyeOffset.y;
+    const bodyScale = this.baseRadius / 90;
+    const spacing = (this.studioMode ? this.customConfig.eyeSpacing : this.eyeSpacing) * bodyScale;
+    const leftEyeX = -spacing / 2 + this.eyeOffset.x * bodyScale;
+    const eyeY = (-12 + this.eyeOffset.y) * bodyScale;
     this.ctx.fillStyle = '#1C1C1E';
     this.ctx.beginPath();
-    this.ctx.arc(leftEyeX, eyeY, 18, 0, Math.PI * 2);
+    this.ctx.arc(leftEyeX, eyeY, 20 * bodyScale, 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.strokeStyle = '#3A3A3C';
-    this.ctx.lineWidth = 3;
+    this.ctx.lineWidth = 3 * bodyScale;
     this.ctx.beginPath();
-    this.ctx.moveTo(-this.baseRadius, eyeY - 15);
-    this.ctx.lineTo(this.baseRadius, eyeY + 15);
+    this.ctx.moveTo(-this.baseRadius, eyeY - 15 * bodyScale);
+    this.ctx.lineTo(this.baseRadius, eyeY + 15 * bodyScale);
     this.ctx.stroke();
     this.ctx.restore();
   }
 
   drawCheeks() {
     this.ctx.save();
+    const bodyScale = this.baseRadius / 90;
     this.ctx.fillStyle = 'rgba(255, 105, 180, 0.45)';
     this.ctx.beginPath();
-    this.ctx.arc(-26, 12, 10, 0, Math.PI * 2);
-    this.ctx.arc(26, 12, 10, 0, Math.PI * 2);
+    this.ctx.arc(-32 * bodyScale, 14 * bodyScale, 12 * bodyScale, 0, Math.PI * 2);
+    this.ctx.arc(32 * bodyScale, 14 * bodyScale, 12 * bodyScale, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.restore();
   }
 
   drawEyes() {
-    const spacing = this.studioMode ? this.customConfig.eyeSpacing : this.eyeSpacing;
-    const basePosX = (this.studioMode ? this.customConfig.eyePosX : 0);
-    const basePosY = (this.studioMode ? this.customConfig.eyePosY : 0);
+    const bodyScale = this.baseRadius / 90;
+    const spacing = (this.studioMode ? this.customConfig.eyeSpacing : this.eyeSpacing) * bodyScale;
+    const basePosX = (this.studioMode ? this.customConfig.eyePosX : 0) * bodyScale;
+    const basePosY = (this.studioMode ? this.customConfig.eyePosY : 0) * bodyScale;
 
     // Dynamic 3D Head-Eye Coupling in VTuber mode:
     // When the human turns/tilts their head, eyes shift across the 3D spherical curvature
     const headRoll = this.faceTracking.active ? this.rotation : 0;
-    const eyeCouplingX = this.faceTracking.active ? (this.eyeOffset.x * 1.6 + Math.sin(headRoll) * 32) : this.eyeOffset.x;
-    const eyeCouplingY = this.faceTracking.active ? (this.eyeOffset.y * 1.4 - (1 - Math.cos(headRoll)) * 20) : this.eyeOffset.y;
+    const eyeCouplingX = (this.faceTracking.active ? (this.eyeOffset.x * 1.6 + Math.sin(headRoll) * 32) : this.eyeOffset.x) * bodyScale;
+    const eyeCouplingY = (this.faceTracking.active ? (this.eyeOffset.y * 1.4 - (1 - Math.cos(headRoll)) * 20) : this.eyeOffset.y) * bodyScale;
 
     const posX = basePosX + eyeCouplingX;
     const posY = basePosY + eyeCouplingY;
-    let eyeY = -12 + posY;
+    let eyeY = (-12 * bodyScale) + posY;
     let leftEyeX = posX - spacing / 2;
     let rightEyeX = posX + spacing / 2;
 
     if (!this.studioMode && this.targetEmotion === 'BORED') {
-      eyeY -= 14;
+      eyeY -= 14 * bodyScale;
     }
 
     // Calculate blink squish
-    let currentHeight = this.eyeHeight;
+    let currentHeight = (this.studioMode ? this.customConfig.eyeHeight : this.eyeHeight) * bodyScale;
     if (this.isBlinking) {
       const blinkFactor = Math.sin(this.blinkProgress * Math.PI);
-      currentHeight = Math.max(3, this.eyeHeight * (1 - blinkFactor * 0.9));
+      currentHeight = Math.max(3 * bodyScale, currentHeight * (1 - blinkFactor * 0.9));
     } else if (!this.studioMode && this.targetEmotion === 'SLEEPING') {
-      currentHeight = 5;
+      currentHeight = 6 * bodyScale;
     }
 
     this.ctx.fillStyle = this.eyeColor;
@@ -2196,9 +2266,9 @@ export class AvatarRenderer {
     // Determine left and right eye tilt & size per emotion or studio config
     let leftTilt = -this.eyeTilt;
     let rightTilt = this.eyeTilt;
-    // Base eye dimensions from mode
-    let baseW = this.studioMode ? this.customConfig.eyeWidth : this.eyeWidth;
-    let baseH = this.studioMode ? this.customConfig.eyeHeight : currentHeight;
+    // Base eye dimensions from mode, scaled strictly to baseRadius
+    let baseW = (this.studioMode ? this.customConfig.eyeWidth : this.eyeWidth) * bodyScale;
+    let baseH = currentHeight;
     let leftW = baseW;
     let rightW = baseW;
     let leftH = baseH;
@@ -2206,21 +2276,21 @@ export class AvatarRenderer {
 
     // 🌐 True 3D Spherical Orthographic Depth Compression (Real Video Measurements):
     // For a sphere of radius R, surface normal angle theta causes orthographic foreshortening cos(theta) = sqrt(1 - (x/R)^2).
-    // As gaze traverses the sphere, the outer eye (closer to the curved silhouette edge) foreshortens down to ~0.69x width.
-    const rSphere = Math.max(40, this.baseRadius * 0.85);
+    // As gaze traverses the sphere, the outer eye (closer to the curved silhouette edge) foreshortens down gracefully.
+    const rSphere = Math.max(40, this.baseRadius * 0.92);
     const leftDistRatio = Math.max(-1, Math.min(1, leftEyeX / rSphere));
     const rightDistRatio = Math.max(-1, Math.min(1, rightEyeX / rSphere));
 
-    // Calculate individual eye foreshortening factors: s = sqrt(1 - (x/R)^2) with 0.69x floor
-    const leftCompress = Math.max(0.69, Math.sqrt(Math.max(0.476, 1 - leftDistRatio * leftDistRatio)));
-    const rightCompress = Math.max(0.69, Math.sqrt(Math.max(0.476, 1 - rightDistRatio * rightDistRatio)));
+    // Calculate individual eye foreshortening factors: s = sqrt(1 - (x/R)^2) with 0.72x floor
+    const leftCompress = Math.max(0.72, Math.sqrt(Math.max(0.518, 1 - leftDistRatio * leftDistRatio)));
+    const rightCompress = Math.max(0.72, Math.sqrt(Math.max(0.518, 1 - rightDistRatio * rightDistRatio)));
 
     leftW *= leftCompress;
     rightW *= rightCompress;
 
     // Slight spherical curvature latitude elevation: y drops slightly along the sphere surface
-    const leftArcDrop = (1 - leftCompress) * 6;
-    const rightArcDrop = (1 - rightCompress) * 6;
+    const leftArcDrop = (1 - leftCompress) * 6 * bodyScale;
+    const rightArcDrop = (1 - rightCompress) * 6 * bodyScale;
     let leftEyeY = eyeY + leftArcDrop;
     let rightEyeY = eyeY + rightArcDrop;
 
@@ -2245,8 +2315,8 @@ export class AvatarRenderer {
         this.drawCircleEye(rightEyeX, rightEyeY, Math.max(rightW, rightH), rightTilt);
         return;
       } else if (style === 'STAR') {
-        this.drawStarEye(leftEyeX, leftEyeY, Math.max(leftW, 16));
-        this.drawStarEye(rightEyeX, rightEyeY, Math.max(rightW, 16));
+        this.drawStarEye(leftEyeX, leftEyeY, Math.max(leftW, 18 * bodyScale));
+        this.drawStarEye(rightEyeX, rightEyeY, Math.max(rightW, 18 * bodyScale));
         return;
       }
     } else {
@@ -2269,10 +2339,11 @@ export class AvatarRenderer {
         leftTilt = Math.sin(this.time * 8) * 0.4;
         rightTilt = -Math.cos(this.time * 8) * 0.4;
       } else if (this.targetEmotion === 'WINK') {
-        leftH = 4;
+        leftH = 5 * bodyScale;
       } else if (this.targetEmotion === 'SURPRISED') {
-        rightW = this.eyeWidth * 1.3 * rightCompress;
-        rightH = currentHeight * 1.18;
+        rightW = baseW * 1.25 * rightCompress;
+        rightH = currentHeight * 1.15;
+        leftW = baseW * 1.05 * leftCompress;
       } else if (this.targetEmotion === 'STAR') {
         this.drawStarEye(leftEyeX, leftEyeY, leftW);
         this.drawStarEye(rightEyeX, rightEyeY, rightW);
@@ -2285,8 +2356,8 @@ export class AvatarRenderer {
     if (this.faceTracking.active) {
       leftTilt += headRoll * 0.85;
       rightTilt += headRoll * 0.85;
-      leftW = Math.max(6, leftW * (1 - Math.sin(headRoll) * 0.35));
-      rightW = Math.max(6, rightW * (1 + Math.sin(headRoll) * 0.35));
+      leftW = Math.max(6 * bodyScale, leftW * (1 - Math.sin(headRoll) * 0.35));
+      rightW = Math.max(6 * bodyScale, rightW * (1 + Math.sin(headRoll) * 0.35));
     }
 
     // Left Pill Eye
@@ -2376,42 +2447,50 @@ export class AvatarRenderer {
   }
 
   /**
-   * 3D Z-Sorted Orbital Rings Renderer (Video Frames 20-22)
-   * Projects 3D ellipse points to 2D screen and renders front/back segments separately.
+   * 3D Z-Sorted Orbital Rainbow Rings Renderer (Bloub / Grok 3D Planetary Architecture)
+   * Projects 3D inclined circles in orthographic space and sorts front/back segments around avatar body.
    */
   drawOrbitalRings(inFront) {
     this.ctx.save();
     this.ctx.globalAlpha = this.ringVisibility;
 
-    for (const ring of this.orbitalRings) {
-      const samples = 72;
+    const R = this.baseRadius;
+
+    for (let rIdx = 0; rIdx < this.orbitalRings.length; rIdx++) {
+      const ring = this.orbitalRings[rIdx];
+      const samples = 96;
       const pts = [];
 
+      const a = (ring.a || 1.36) * R;
+      const k = ring.k !== undefined ? ring.k : 0.22; // flattening ratio b/a
+      const kz = Math.sqrt(Math.max(0, 1 - k * k));
+      const tilt = ring.tilt !== undefined ? ring.tilt : (rIdx / this.orbitalRings.length) * Math.PI * 0.8 + 0.35;
+      const cu = Math.cos(tilt);
+      const su = Math.sin(tilt);
+      const spin = ring.angle;
+      const sweep = ring.sweep || 1.0;
+      const span = sweep * Math.PI * 2;
+
       for (let i = 0; i <= samples; i++) {
-        const theta = (i / samples) * Math.PI * 2 + ring.angle;
-        
-        // 3D Ellipse Parametric Equations
-        let x0 = ring.radius * Math.cos(theta);
-        let y0 = ring.radius * Math.sin(theta) * Math.cos(ring.tiltX);
-        let z0 = ring.radius * Math.sin(theta) * Math.sin(ring.tiltX);
+        const theta = spin + (i / samples) * span;
+        const ct = Math.cos(theta);
+        const st = Math.sin(theta);
 
-        // Rotate around Y and Z axes
-        let x1 = x0 * Math.cos(ring.tiltY) + z0 * Math.sin(ring.tiltY);
-        let y1 = y0;
-        let z1 = -x0 * Math.sin(ring.tiltY) + z0 * Math.cos(ring.tiltY);
-
-        let x2 = x1 * Math.cos(ring.rotZ) - y1 * Math.sin(ring.rotZ);
-        let y2 = x1 * Math.sin(ring.rotZ) + y1 * Math.cos(ring.rotZ);
-        let z2 = z1;
+        // Bloub / Grok 3D Orthographic Projection:
+        // u = (cu, su, 0); v = (-su * k, cu * k, kz)
+        const x = a * (ct * cu - st * su * k);
+        const y = a * (ct * su + st * cu * k);
+        const z = a * st * kz;
 
         pts.push({
-          x: this.x + x2,
-          y: this.y + y2,
-          z: z2
+          x: this.x + x,
+          y: this.y + y,
+          z: z,
+          progress: i / samples
         });
       }
 
-      // Break continuous ring into segments based on depth Z
+      // Group points into continuous front or back segments
       let segment = [];
       for (let i = 0; i < pts.length; i++) {
         const p = pts[i];
@@ -2421,20 +2500,20 @@ export class AvatarRenderer {
           segment.push(p);
         } else {
           if (segment.length > 1) {
-            this.renderRingSegment(segment, ring);
+            this.renderRingSegment(segment, ring, inFront);
           }
           segment = [];
         }
       }
       if (segment.length > 1) {
-        this.renderRingSegment(segment, ring);
+        this.renderRingSegment(segment, ring, inFront);
       }
     }
 
     this.ctx.restore();
   }
 
-  renderRingSegment(segment, ring) {
+  renderRingSegment(segment, ring, inFront) {
     if (segment.length < 2) return;
 
     this.ctx.beginPath();
@@ -2443,17 +2522,39 @@ export class AvatarRenderer {
       this.ctx.lineTo(segment[i].x, segment[i].y);
     }
 
-    // Gradient along segment
+    // Gradient along segment with multi-stop rainbow spectrum!
     const pStart = segment[0];
     const pEnd = segment[segment.length - 1];
     const grad = this.ctx.createLinearGradient(pStart.x, pStart.y, pEnd.x, pEnd.y);
-    grad.addColorStop(0, ring.color1);
-    grad.addColorStop(1, ring.color2);
+    
+    if (ring.isRainbow || !ring.color1) {
+      // Dynamic 3D Rainbow Spectrum (Bloub / Grok planetary hue wheel)
+      const baseHue = (ring.hue !== undefined ? ring.hue : 0) + (ring.angle * 180 / Math.PI);
+      const span = ring.hueSpan || 180;
+      grad.addColorStop(0, `hsl(${Math.round(baseHue) % 360}, 95%, 62%)`);
+      grad.addColorStop(0.25, `hsl(${Math.round(baseHue + span * 0.25) % 360}, 95%, 62%)`);
+      grad.addColorStop(0.5, `hsl(${Math.round(baseHue + span * 0.5) % 360}, 95%, 62%)`);
+      grad.addColorStop(0.75, `hsl(${Math.round(baseHue + span * 0.75) % 360}, 95%, 62%)`);
+      grad.addColorStop(1, `hsl(${Math.round(baseHue + span) % 360}, 95%, 62%)`);
+    } else {
+      grad.addColorStop(0, ring.color1);
+      grad.addColorStop(0.5, ring.color2 || ring.color1);
+      grad.addColorStop(1, ring.color3 || ring.color2 || ring.color1);
+    }
 
+    const ringWidth = Math.max(3, (ring.widthRatio || 0.055) * this.baseRadius);
+    
+    this.ctx.save();
+    // Subtle glow on front arcs for luminous 3D celestial effect
+    if (inFront) {
+      this.ctx.shadowColor = ring.isRainbow ? 'rgba(0, 229, 255, 0.45)' : (ring.color1 || 'rgba(255, 255, 255, 0.3)');
+      this.ctx.shadowBlur = Math.max(4, ringWidth * 1.2);
+    }
     this.ctx.strokeStyle = grad;
-    this.ctx.lineWidth = ring.width;
+    this.ctx.lineWidth = ringWidth;
     this.ctx.lineCap = 'round';
     this.ctx.stroke();
+    this.ctx.restore();
   }
 
   drawParticles(inFront) {

@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const canvas = document.getElementById('avatarCanvas');
   const avatar = new AvatarRenderer(canvas);
+  window.avatar = avatar;
+  canvas.__avatar = avatar;
   const faceTracker = new FaceTracker(avatar);
 
   // 🔊 Sound FX Toggle & Persistence
@@ -1152,9 +1154,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Reset values
       if (sliderStiffness) { sliderStiffness.value = 0.12; if (valStiffness) valStiffness.textContent = '0.12'; avatar.springStiffness = 0.12; }
-      if (sliderEyeW) { sliderEyeW.value = 16; if (valEyeW) valEyeW.textContent = '16px'; }
-      if (sliderEyeH) { sliderEyeH.value = 38; if (valEyeH) valEyeH.textContent = '38px'; }
-      if (sliderEyeSpacing) { sliderEyeSpacing.value = 28; if (valEyeSpacing) valEyeSpacing.textContent = '28px'; }
+      if (sliderEyeW) { sliderEyeW.value = 20; if (valEyeW) valEyeW.textContent = '20px'; }
+      if (sliderEyeH) { sliderEyeH.value = 44; if (valEyeH) valEyeH.textContent = '44px'; }
+      if (sliderEyeSpacing) { sliderEyeSpacing.value = 48; if (valEyeSpacing) valEyeSpacing.textContent = '48px'; }
       if (sliderEyeTilt) { sliderEyeTilt.value = 0; if (valEyeTilt) valEyeTilt.textContent = '0°'; }
       if (sliderEyePosX) { sliderEyePosX.value = 0; if (valEyePosX) valEyePosX.textContent = '0px'; }
       if (sliderEyePosY) { sliderEyePosY.value = 0; if (valEyePosY) valEyePosY.textContent = '0px'; }
@@ -1167,9 +1169,9 @@ document.addEventListener('DOMContentLoaded', () => {
       avatar.updateStudioConfig({
         shape: 'BLOB',
         eyeStyle: 'PILL',
-        eyeWidth: 16,
-        eyeHeight: 38,
-        eyeSpacing: 28,
+        eyeWidth: 20,
+        eyeHeight: 44,
+        eyeSpacing: 48,
         eyeTilt: 0,
         eyeRotation: 0,
         eyePosX: 0,
