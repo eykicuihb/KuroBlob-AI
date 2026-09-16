@@ -110,7 +110,14 @@ if (process.argv[1] && process.argv[1].endsWith('validate_expression.js')) {
     process.exit(0);
   }
 
-  const absPath = path.resolve(process.cwd(), targetFile);
+  const baseDir = process.cwd();
+  const absPath = path.resolve(baseDir, targetFile);
+  const relToBase = path.relative(baseDir, absPath);
+  if (relToBase.startsWith('..') || path.isAbsolute(relToBase) || !absPath.endsWith('.js')) {
+    console.error('❌ Invalid target file: must be a .js file within the current working directory');
+    process.exit(1);
+  }
+
   import(`file://${absPath}`).then(mod => {
     const exp = mod.EXPRESSION_DEFINITION || mod.default || mod;
     const res = validateExpression(exp);
